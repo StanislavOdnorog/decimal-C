@@ -251,6 +251,7 @@ s21_decimal s21_pow(s21_decimal a, int exp){
 }
 
 s21_decimal s21_div(s21_decimal a, s21_decimal b) {
+  s21_decimal problem = {SIGN_HEX_POS,10,0,0};
   s21_decimal zero = {SIGN_HEX_POS,0,0,0};
   s21_decimal temp = {SIGN_HEX_POS,1,0,0};
   s21_decimal res = {SIGN_HEX_POS,0,0,0};
@@ -260,19 +261,27 @@ s21_decimal s21_div(s21_decimal a, s21_decimal b) {
   set_sign(&a, 1);
   set_sign(&b, 1);
 
-  while(s21_is_greater_or_equal(b, zero) && s21_is_less(b, a)){
-    b = s21_shift_l(b, 1);
-    temp = s21_shift_l(temp, 1);
-  }
-
-  do {
-    if (s21_is_greater_or_equal(a, b)){
-      a = s21_sub(a, b);
-      res = s21_add(res, temp);
+  if (s21_is_greater_or_equal(a, b)) {
+    while(s21_is_greater(b, zero) && s21_is_less(b, a)){
+      b = s21_shift_l(b, 1);
+      temp = s21_shift_l(temp, 1);
     }
-    b = s21_shift_r(b, 1);
-    temp = s21_shift_r(temp, 1);
-  } while(s21_is_not_zero(temp));
+
+    do {
+      if (s21_is_greater_or_equal(a, b)){
+        a = sub_fract(a, b);
+        res = add_fract(res, temp);
+      }
+      b = s21_shift_r(b, 1);
+      temp = s21_shift_r(temp, 1);
+    } while(s21_is_not_zero(temp));
+
+  }
+  else if (s21_is_less(a, b)) {
+    set_exp(&a, 0);
+    set_exp(&b, MAX_10_EXP-4);
+    res = s21_div(a, b);
+  }
 
   set_sign(&res, new_sign);
   return res;
@@ -512,6 +521,12 @@ int main(int argc, char *argv[])
   div_test(SIGN_HEX_POS, SIGN_HEX_NEG, 2342, 111, 15, 0);
   div_test(SIGN_HEX_POS, SIGN_HEX_POS, 233, 112, 10, 1);
   div_test(SIGN_HEX_POS, SIGN_HEX_POS, 1, 1, 0, MAX_10_EXP-1);
+
+  div_test(SIGN_HEX_NEG, SIGN_HEX_POS, 354, 1, 4, 1);
+  div_test(SIGN_HEX_NEG, SIGN_HEX_NEG, 111, 9, 7, 1);
+  div_test(SIGN_HEX_POS, SIGN_HEX_POS, 456, 2, 1, 2);
+  div_test(SIGN_HEX_POS, SIGN_HEX_NEG, 1, 4444, 0, MAX_10_EXP-1);
+  div_test(SIGN_HEX_POS, SIGN_HEX_POS, 1, 22233, 0, MAX_10_EXP-1);
 
   return EXIT_SUCCESS;
 }
