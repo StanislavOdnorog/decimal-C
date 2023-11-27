@@ -60,7 +60,7 @@ s21_decimal sub_fract(s21_decimal a, s21_decimal b);
 s21_decimal s21_add(s21_decimal a, s21_decimal b);
 s21_decimal s21_sub(s21_decimal a, s21_decimal b);
 s21_decimal s21_mul(s21_decimal a, s21_decimal b);
-// s21_decimal div_fract(s21_decimal a, s21_decimal b);
+s21_decimal s21_div(s21_decimal a, s21_decimal b);
 void normalize_decs(s21_decimal *a, s21_decimal *b);
 
 // PRINT DECIMAL (WAY TO HEAVY!!!) //

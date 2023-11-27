@@ -186,9 +186,7 @@ s21_decimal s21_add(s21_decimal a, s21_decimal b){  // TODO: FIX INPUT AND RETUR
       } else{
         if (s21_is_greater_module(a, b)){
           res = sub_fract(a_pos, b_pos);
-
         } else {
-
           res = sub_fract(b_pos, a_pos);
           set_sign(&res, 0);
         }
@@ -223,49 +221,62 @@ s21_decimal s21_sub(s21_decimal a, s21_decimal b){ // TODO: FIX INPUT AND RETURN
 }
 
 s21_decimal s21_mul(s21_decimal a, s21_decimal b){ // TODO: FIX INPUT AND RETURN
-
   s21_decimal res = {SIGN_HEX_POS,0,0,0};
   s21_decimal zero = {SIGN_HEX_POS,0,0,0};
   unsigned new_exp = get_exp(a) + get_exp(b);
-  new_exp = new_exp < 0 ? 0 : new_exp; 
+  new_exp = new_exp > MAX_10_EXP ? MAX_10_EXP : new_exp; 
   bool new_sign = get_sign(a) == get_sign(b);
+
+  set_exp(&res, new_exp);
+  set_sign(&res, new_sign);
 
   while (!s21_is_zero(b)) {
     res = add_fract(res, ((get_bit(b,M1) & 1)) ? a : zero); 
     a = s21_shift_l(a, 1);
     b = s21_shift_r(b, 1);
   }
-
-  set_exp(&res, new_exp);
-  set_sign(&res, new_sign);
   return res;
 }
 
-// s21_decimal div_fract(s21_decimal a, s21_decimal b){
-//   s21_decimal res = a;
-//   s21_decimal quot = {SIGN_HEX_POS,1,0,0};
-//   s21_decimal zero = {SIGN_HEX_POS,0,0,0};
-//   unsigned new_exp = MAX_10_EXP - (get_exp(a) - get_exp(b));
-//   new_exp = new_exp > MAX_10_EXP ? MAX_10_EXP : new_exp; 
-//   bool new_sign = get_sign(a) == get_sign(b);
-//
-//   if (is_zero_fract(b)) return zero;
-//   if (is_equal_dec(a, b)) return quot;
-//
-//   b = shift_l_fract(b, 1);
-//   quot = shift_l_fract(quot, 1);
-//
-//   while (is_less_or_equal_dec(b, a)){
-//     b = shift_l_fract(b, 1);
-//     quot = shift_l_fract(quot, 1);
-//   }
-//
-//   quot = add_fract(quot, div_fact())
-//  
-//   set_exp(&res, new_exp);
-//   set_sign(&res, new_sign);
-//   return res;
-// }
+s21_decimal s21_pow(s21_decimal a, int exp){
+  s21_decimal res = {a.e, a.m[0], a.m[1], a.m[2]};
+  s21_decimal one = {a.e,1,0,0};
+  if (exp == 0){
+   return one; 
+  }
+  for (int i = 1; i < exp; i++) {
+    res = s21_add(res, s21_mul(res, a));
+  }
+  return res;
+}
+
+s21_decimal s21_div(s21_decimal a, s21_decimal b) {
+  s21_decimal zero = {SIGN_HEX_POS,0,0,0};
+  s21_decimal temp = {SIGN_HEX_POS,1,0,0};
+  s21_decimal res = {SIGN_HEX_POS,0,0,0};
+  bool new_sign = get_sign(a) == get_sign(b);
+
+  normalize_decs(&a, &b);
+  set_sign(&a, 1);
+  set_sign(&b, 1);
+
+  while(s21_is_greater_or_equal(b, zero) && s21_is_less(b, a)){
+    b = s21_shift_l(b, 1);
+    temp = s21_shift_l(temp, 1);
+  }
+
+  do {
+    if (s21_is_greater_or_equal(a, b)){
+      a = s21_sub(a, b);
+      res = s21_add(res, temp);
+    }
+    b = s21_shift_r(b, 1);
+    temp = s21_shift_r(temp, 1);
+  } while(s21_is_not_zero(temp));
+
+  set_sign(&res, new_sign);
+  return res;
+}
 
 void normalize_decs(s21_decimal *a, s21_decimal *b){
   s21_decimal ten = {SIGN_HEX_POS,10,0,0};
@@ -403,6 +414,26 @@ void mul_test(unsigned sign1, unsigned sign2, unsigned num1, unsigned num2, unsi
   printf("------------------\n");
 }
 
+void div_test(unsigned sign1, unsigned sign2, unsigned num1, unsigned num2, unsigned exp1, unsigned exp2){
+  s21_decimal test = {sign1, num1, 0, 0};
+  set_exp(&test, exp1);
+  s21_decimal test2 = {sign2, num2, 0, 0};
+  set_exp(&test2, exp2);
+
+  print_dec(&test);
+  // print_dec_bin(test);
+  printf(":\n");
+  print_dec(&test2);
+  // print_dec_bin(test2);
+  printf("=\n");
+  s21_decimal result;
+  result = s21_div(test, test2);
+
+  print_dec(&result);
+  // print_dec_bin(result);
+  printf("------------------\n");
+}
+
 void sub_test(unsigned sign1, unsigned sign2, unsigned num1, unsigned num2, unsigned exp1, unsigned exp2){
   s21_decimal test = {sign1, num1, 0, 0};
   set_exp(&test, exp1);
@@ -426,27 +457,8 @@ void sub_test(unsigned sign1, unsigned sign2, unsigned num1, unsigned num2, unsi
 
 int main(int argc, char *argv[])
 {
-  add_test(SIGN_HEX_NEG, SIGN_HEX_POS, 3127, 751, 5, 10);
-  add_test(SIGN_HEX_NEG, SIGN_HEX_NEG, 567, 333, 1, 1);
-  add_test(SIGN_HEX_POS, SIGN_HEX_POS, 234234, 112321, 0, 0);
-  add_test(SIGN_HEX_POS, SIGN_HEX_NEG, 2342342912, 112321, 20, 0);
-  add_test(SIGN_HEX_POS, SIGN_HEX_POS, 234234, 112321, 0, 20);
+  // MAX AND MIN VALUES //
 
-  mul_test(SIGN_HEX_NEG, SIGN_HEX_POS, 3127, 751, 5, 10);
-  mul_test(SIGN_HEX_NEG, SIGN_HEX_NEG, 567, 333, 1, 1);
-  mul_test(SIGN_HEX_POS, SIGN_HEX_POS, 234234, 112321, 0, 0);
-  mul_test(SIGN_HEX_POS, SIGN_HEX_NEG, 2342342912, 112321, 20, 0);
-  mul_test(SIGN_HEX_POS, SIGN_HEX_POS, 234234, 112321, 0, 20);
-
-  sub_test(SIGN_HEX_NEG, SIGN_HEX_POS, 3127, 751, 5, 10);
-  sub_test(SIGN_HEX_NEG, SIGN_HEX_NEG, 567, 333, 1, 1);
-  sub_test(SIGN_HEX_POS, SIGN_HEX_POS, 234234, 112321, 0, 0);
-  sub_test(SIGN_HEX_POS, SIGN_HEX_NEG, 2342342912, 112321, 20, 0);
-  sub_test(SIGN_HEX_POS, SIGN_HEX_POS, 233, 112, 10, 1);
-  sub_test(SIGN_HEX_POS, SIGN_HEX_POS, 1, 1, 0, MAX_10_EXP-1);
-
-
-  printf("\n");
   printf("---------MAX POS NUMBER--------\n");
   s21_decimal max_pos = {SIGN_HEX_POS, 4294967295, 4294967295, 4294967295};
   // print_dec_bin(max_pos);
@@ -471,6 +483,35 @@ int main(int argc, char *argv[])
   set_exp(&min_neg, MAX_10_EXP);
   // print_dec_bin(min_neg);
   print_dec(&min_neg);
+
+  printf("\n");
+
+  // ARITHMETICS // 
+  add_test(SIGN_HEX_NEG, SIGN_HEX_POS, 3127, 751, 5, 10);
+  add_test(SIGN_HEX_NEG, SIGN_HEX_NEG, 567, 333, 1, 1);
+  add_test(SIGN_HEX_POS, SIGN_HEX_POS, 234234, 112321, 0, 0);
+  add_test(SIGN_HEX_POS, SIGN_HEX_NEG, 2342342912, 112321, 20, 0);
+  add_test(SIGN_HEX_POS, SIGN_HEX_POS, 234234, 112321, 0, 20);
+
+  mul_test(SIGN_HEX_NEG, SIGN_HEX_POS, 3127, 751, 5, 10);
+  mul_test(SIGN_HEX_NEG, SIGN_HEX_NEG, 567, 333, 1, 1);
+  mul_test(SIGN_HEX_POS, SIGN_HEX_POS, 234234, 112321, 0, 0);
+  mul_test(SIGN_HEX_POS, SIGN_HEX_NEG, 2342342912, 112321, 20, 0);
+  mul_test(SIGN_HEX_POS, SIGN_HEX_POS, 234234, 112321, 0, 20);
+
+  sub_test(SIGN_HEX_NEG, SIGN_HEX_POS, 3127, 751, 5, 10);
+  sub_test(SIGN_HEX_NEG, SIGN_HEX_NEG, 567, 333, 1, 1);
+  sub_test(SIGN_HEX_POS, SIGN_HEX_POS, 234234, 112321, 0, 0);
+  sub_test(SIGN_HEX_POS, SIGN_HEX_NEG, 2342342912, 112321, 20, 0);
+  sub_test(SIGN_HEX_POS, SIGN_HEX_POS, 233, 112, 10, 1);
+  sub_test(SIGN_HEX_POS, SIGN_HEX_POS, 1, 1, 0, MAX_10_EXP-1);
+
+  div_test(SIGN_HEX_NEG, SIGN_HEX_POS, 6000, 200, 5, 10);
+  div_test(SIGN_HEX_NEG, SIGN_HEX_NEG, 356, 2, 1, 1);
+  div_test(SIGN_HEX_POS, SIGN_HEX_POS, 245, 245, 0, 0);
+  div_test(SIGN_HEX_POS, SIGN_HEX_NEG, 2342, 111, 15, 0);
+  div_test(SIGN_HEX_POS, SIGN_HEX_POS, 233, 112, 10, 1);
+  div_test(SIGN_HEX_POS, SIGN_HEX_POS, 1, 1, 0, MAX_10_EXP-1);
 
   return EXIT_SUCCESS;
 }
