@@ -1,4 +1,5 @@
 #include "main.h"
+#include <stdio.h>
 
 // BIT MANIPULATION //
 void set_bit(s21_decimal *num, unsigned n, unsigned val){
@@ -251,39 +252,46 @@ s21_decimal s21_pow(s21_decimal a, int exp){
 }
 
 s21_decimal s21_div(s21_decimal a, s21_decimal b) {
-  s21_decimal problem = {SIGN_HEX_POS,10,0,0};
+  s21_decimal ten = {SIGN_HEX_POS,10,0,0};
   s21_decimal zero = {SIGN_HEX_POS,0,0,0};
-  s21_decimal temp = {SIGN_HEX_POS,1,0,0};
+  s21_decimal one = {SIGN_HEX_POS,1,0,0};
+  s21_decimal temp = {SIGN_HEX_POS,0,0,0};
   s21_decimal res = {SIGN_HEX_POS,0,0,0};
   bool new_sign = get_sign(a) == get_sign(b);
 
   normalize_decs(&a, &b);
+  int new_exp = get_exp(a) - get_exp(b);
+
   set_sign(&a, 1);
   set_sign(&b, 1);
 
-  if (s21_is_greater_or_equal(a, b)) {
-    while(s21_is_greater(b, zero) && s21_is_less(b, a)){
-      b = s21_shift_l(b, 1);
-      temp = s21_shift_l(temp, 1);
-    }
-
-    do {
-      if (s21_is_greater_or_equal(a, b)){
-        a = sub_fract(a, b);
-        res = add_fract(res, temp);
+  while (s21_is_not_zero(a) && get_bit(res, MAX_BITS-1) == 0) {  
+    if (s21_is_greater_or_equal(a, b)) {
+      while(s21_is_greater_or_equal(a, b)){
+        b = s21_shift_l(b, 1);
+        temp = s21_shift_l(temp, 1);
       }
-      b = s21_shift_r(b, 1);
-      temp = s21_shift_r(temp, 1);
-    } while(s21_is_not_zero(temp));
+      do {
+          if (s21_is_greater_or_equal(a, b)){
+            a = s21_sub(a, b);
+            res = s21_add(res, temp);
+          }
+          b = s21_shift_r(b, 1);
+          temp = s21_shift_r(temp, 1);
+        } while(s21_is_not_zero(temp));
 
-  }
-  else if (s21_is_less(a, b)) {
-    set_exp(&a, 0);
-    set_exp(&b, MAX_10_EXP-4);
-    res = s21_div(a, b);
+    }
+    else {
+
+      new_exp++;
+      a = s21_mul(a, ten);
+      res = s21_mul(res, ten);
+
+    }
   }
 
   set_sign(&res, new_sign);
+  set_exp(&res, new_exp - MAX_10_EXP);
   return res;
 }
 
