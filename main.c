@@ -1,4 +1,5 @@
 #include "main.h"
+#include <math.h>
 #include <stdio.h>
 
 // BIT MANIPULATION //
@@ -253,43 +254,50 @@ s21_decimal s21_pow(s21_decimal a, int exp){
 
 s21_decimal s21_div(s21_decimal a, s21_decimal b) {
   s21_decimal ten = {SIGN_HEX_POS,10,0,0};
-  s21_decimal zero = {SIGN_HEX_POS,0,0,0};
   s21_decimal one = {SIGN_HEX_POS,1,0,0};
-  s21_decimal temp = {SIGN_HEX_POS,0,0,0};
-  s21_decimal res = {SIGN_HEX_POS,0,0,0};
-  bool new_sign = get_sign(a) == get_sign(b);
+  s21_decimal remainder = {SIGN_HEX_POS,1,0,0};
+  s21_decimal res = {SIGN_HEX_POS,1,0,0};
+  s21_decimal mult = {SIGN_HEX_POS,1,0,0};
 
-  normalize_decs(&a, &b);
   int new_exp = get_exp(a) - get_exp(b);
+  normalize_decs(&a, &b);
 
+  bool new_sign = get_sign(a) == get_sign(b);
   set_sign(&a, 1);
   set_sign(&b, 1);
 
+  s21_decimal b_copy = b;
+
+  if (s21_is_equal(a, b))
+    return remainder;
+
   while (s21_is_not_zero(a) && get_bit(res, MAX_BITS-1) == 0) {  
-    if (s21_is_greater_or_equal(a, b)) {
-      while(s21_is_greater_or_equal(a, b)){
-        b = s21_shift_l(b, 1);
-        temp = s21_shift_l(temp, 1);
-      }
-      do {
-          if (s21_is_greater_or_equal(a, b)){
-            a = s21_sub(a, b);
-            res = s21_add(res, temp);
-          }
-          b = s21_shift_r(b, 1);
-          temp = s21_shift_r(temp, 1);
-        } while(s21_is_not_zero(temp));
-
-    }
-    else {
-
+    remainder = one;
+    b = b_copy;
+    if (s21_is_greater(b, a)) {
       new_exp++;
       a = s21_mul(a, ten);
       res = s21_mul(res, ten);
-
+      mult = s21_mul(mult, ten);
     }
-  }
+    else {
+      while (s21_is_greater_or_equal(a, b)) {
+        b = s21_shift_l(b, 1);
+        remainder = s21_shift_l(remainder, 1);
+      }
+           
+      do {
+        if (s21_is_greater_or_equal(a, b)){
+          a = sub_fract(a, b);
+          res = add_fract(res, remainder);
+        }
+        remainder = s21_shift_r(remainder, 1);
+        b = s21_shift_r(b, 1);
+      } while (s21_is_not_zero(remainder));
+    }
 
+  }
+  res = sub_fract(res, mult);
   set_sign(&res, new_sign);
   set_exp(&res, new_exp - MAX_10_EXP);
   return res;
