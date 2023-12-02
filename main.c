@@ -256,26 +256,34 @@ s21_decimal s21_div(s21_decimal a, s21_decimal b) {
   s21_decimal ten = {SIGN_HEX_POS,10,0,0};
   s21_decimal max = {SIGN_HEX_POS,MAX_UNS,MAX_UNS,0xFFFFFFF};
   s21_decimal one = {SIGN_HEX_POS,1,0,0};
+  s21_decimal five = {SIGN_HEX_POS,5,0,0};
+  s21_decimal zero = {SIGN_HEX_POS,0,0,0};
   s21_decimal remainder = {SIGN_HEX_POS,1,0,0};
   s21_decimal res = {SIGN_HEX_POS,1,0,0};
   s21_decimal mult = {SIGN_HEX_POS,1,0,0};
 
-  int new_exp = get_exp(a) - get_exp(b);
+  int new_exp = get_exp(b) - get_exp(b);
   bool new_sign = get_sign(a) == get_sign(b);
   set_sign(&a, 1);
   set_sign(&b, 1);
 
   s21_decimal b_copy = b;
 
+  if (s21_is_zero(b))
+    return zero;
+
+  if (s21_is_zero(a))
+    return zero;
+
   if (s21_is_equal(a, b))
     return remainder;
 
-  while (s21_is_not_zero(a) && s21_is_less(res, max)) {
+  while (s21_is_not_zero(a) && s21_is_less_or_equal(res, max)) {
     remainder = one;
     b = b_copy;
     normalize_decs(&a, &b);
     if (s21_is_greater(b, a)) {
-      new_exp++;
+	new_exp++;
       a = s21_mul(a, ten);
       res = s21_mul(res, ten);
       mult = s21_mul(mult, ten);
@@ -296,8 +304,43 @@ s21_decimal s21_div(s21_decimal a, s21_decimal b) {
       } while (s21_is_not_zero(remainder));
     }
   }
-  res = s21_sub(res, mult);
-  set_exp(&res, new_exp - MAX_10_EXP);
+	if (s21_is_greater(res,max)){
+		
+	    remainder = one;
+	    b = b_copy;
+	    normalize_decs(&a, &b);
+	    if (s21_is_greater(b, a)) {
+		new_exp++;
+	      a = s21_mul(a, ten);
+	      res = s21_mul(res, ten);
+	      mult = s21_mul(mult, ten);
+	    }
+	    else {
+	      while (s21_is_less_or_equal(b, a)) {
+		b = s21_shift_l(b, 1);
+		remainder = s21_shift_l(remainder, 1);
+	      }
+		   
+	      do {
+		if (s21_is_greater_or_equal(a, b)){
+		  a = s21_sub(a, b);
+		  res = s21_add(res, remainder);
+		}
+		remainder = s21_shift_r(remainder, 1);
+		b = s21_shift_r(b, 1);
+	      } while (s21_is_not_zero(remainder));
+	    }
+	}
+
+	normalize_decs(&a,&b_copy);
+	set_exp(&a,0);
+	set_exp(&res,0);
+	set_exp(&b_copy,0);
+	if (a.m[0]*10 / b_copy.m[0] >= 5){
+		res = s21_add(res, one);
+	}
+	res = sub_fract(res, mult);
+  set_exp(&res, new_exp);
 
   return res;
 }
@@ -542,6 +585,19 @@ int main(int argc, char *argv[])
   div_test(SIGN_HEX_POS, SIGN_HEX_POS, 456, 2, 1, 2);
   div_test(SIGN_HEX_POS, SIGN_HEX_NEG, 1, 4444, 0, MAX_10_EXP-5);
   div_test(SIGN_HEX_POS, SIGN_HEX_POS, 1, 22233, 0, MAX_10_EXP-5);
+
+printf("\n------ KATYA'S TESTS ------\n");
+  div_test(SIGN_HEX_POS, SIGN_HEX_POS, 0, 0, 0, 0);
+  div_test(SIGN_HEX_POS, SIGN_HEX_POS, 1, 00, 0, 0);
+  div_test(SIGN_HEX_POS, SIGN_HEX_NEG, 00, 1, 0, 0);
+  div_test(SIGN_HEX_POS, SIGN_HEX_POS, 398, 2, 2, 0);
+  div_test(SIGN_HEX_POS, SIGN_HEX_POS, 200001, 3, 5, 0);
+  div_test(SIGN_HEX_POS, SIGN_HEX_POS, 2, 3, 0, 0);
+  div_test(SIGN_HEX_POS, SIGN_HEX_POS, 200001, 7, 5, 2);
+  div_test(SIGN_HEX_POS, SIGN_HEX_POS, 355, 113, 0, 0);
+  div_test(SIGN_HEX_POS, SIGN_HEX_POS, 1, 3, 0, 0);
+  div_test(SIGN_HEX_POS, SIGN_HEX_POS, 888888889, 9, 5, 0);
+  div_test(SIGN_HEX_POS, SIGN_HEX_POS, 555556548, 7, 4, 0);
 
   return EXIT_SUCCESS;
 }
