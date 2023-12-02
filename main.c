@@ -254,14 +254,13 @@ s21_decimal s21_pow(s21_decimal a, int exp){
 
 s21_decimal s21_div(s21_decimal a, s21_decimal b) {
   s21_decimal ten = {SIGN_HEX_POS,10,0,0};
+  s21_decimal max = {SIGN_HEX_POS,MAX_UNS,MAX_UNS,0xFFFFFFF};
   s21_decimal one = {SIGN_HEX_POS,1,0,0};
   s21_decimal remainder = {SIGN_HEX_POS,1,0,0};
   s21_decimal res = {SIGN_HEX_POS,1,0,0};
   s21_decimal mult = {SIGN_HEX_POS,1,0,0};
 
   int new_exp = get_exp(a) - get_exp(b);
-  normalize_decs(&a, &b);
-
   bool new_sign = get_sign(a) == get_sign(b);
   set_sign(&a, 1);
   set_sign(&b, 1);
@@ -271,9 +270,10 @@ s21_decimal s21_div(s21_decimal a, s21_decimal b) {
   if (s21_is_equal(a, b))
     return remainder;
 
-  while (s21_is_not_zero(a) && get_bit(res, MAX_BITS-1) == 0) {  
+  while (s21_is_not_zero(a) && s21_is_less(res, max)) {
     remainder = one;
     b = b_copy;
+    normalize_decs(&a, &b);
     if (s21_is_greater(b, a)) {
       new_exp++;
       a = s21_mul(a, ten);
@@ -281,25 +281,24 @@ s21_decimal s21_div(s21_decimal a, s21_decimal b) {
       mult = s21_mul(mult, ten);
     }
     else {
-      while (s21_is_greater_or_equal(a, b)) {
+      while (s21_is_less_or_equal(b, a)) {
         b = s21_shift_l(b, 1);
         remainder = s21_shift_l(remainder, 1);
       }
            
       do {
         if (s21_is_greater_or_equal(a, b)){
-          a = sub_fract(a, b);
-          res = add_fract(res, remainder);
+          a = s21_sub(a, b);
+          res = s21_add(res, remainder);
         }
         remainder = s21_shift_r(remainder, 1);
         b = s21_shift_r(b, 1);
       } while (s21_is_not_zero(remainder));
     }
-
   }
-  res = sub_fract(res, mult);
-  set_sign(&res, new_sign);
+  res = s21_sub(res, mult);
   set_exp(&res, new_exp - MAX_10_EXP);
+
   return res;
 }
 
@@ -541,8 +540,8 @@ int main(int argc, char *argv[])
   div_test(SIGN_HEX_NEG, SIGN_HEX_POS, 354, 1, 4, 1);
   div_test(SIGN_HEX_NEG, SIGN_HEX_NEG, 111, 9, 7, 1);
   div_test(SIGN_HEX_POS, SIGN_HEX_POS, 456, 2, 1, 2);
-  div_test(SIGN_HEX_POS, SIGN_HEX_NEG, 1, 4444, 0, MAX_10_EXP-1);
-  div_test(SIGN_HEX_POS, SIGN_HEX_POS, 1, 22233, 0, MAX_10_EXP-1);
+  div_test(SIGN_HEX_POS, SIGN_HEX_NEG, 1, 4444, 0, MAX_10_EXP-5);
+  div_test(SIGN_HEX_POS, SIGN_HEX_POS, 1, 22233, 0, MAX_10_EXP-5);
 
   return EXIT_SUCCESS;
 }
