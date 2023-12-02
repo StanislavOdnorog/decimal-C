@@ -17,6 +17,7 @@
 
 #define MAX_BITS 127
 #define PART_BITS 32
+#define MAX_UNS 0xFFFFFFFF
 
 #define M1 32
 #define M2 64
