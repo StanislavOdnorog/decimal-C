@@ -23,6 +23,12 @@
 #define M2 64
 #define M3 96
 
+#define ZERO {SIGN_HEX_POS, 0, 0, 0}
+#define ONE {SIGN_HEX_POS, 1, 0, 0}
+#define FIVE {SIGN_HEX_POS, 5, 0, 0}
+#define TEN {SIGN_HEX_POS, 10, 0, 0}
+#define MAX {SIGN_HEX_POS,MAX_UNS,MAX_UNS,0xFFFFFFF}
+
 // STRUCTURE //
 typedef struct{
   unsigned e;
@@ -58,11 +64,22 @@ int s21_is_less_or_equal(s21_decimal a, s21_decimal b);
 // ARITHMETICS //
 s21_decimal add_fract(s21_decimal a, s21_decimal b);
 s21_decimal sub_fract(s21_decimal a, s21_decimal b);
+void normalize_decs(s21_decimal *a, s21_decimal *b);
+void div_helper(
+		s21_decimal *a,
+		s21_decimal *b,
+		s21_decimal *remainder,
+		s21_decimal one,
+		s21_decimal ten,
+		s21_decimal b_copy,
+    int *new_exp,
+		s21_decimal *res,
+		s21_decimal *mult);
+
 s21_decimal s21_add(s21_decimal a, s21_decimal b);
 s21_decimal s21_sub(s21_decimal a, s21_decimal b);
 s21_decimal s21_mul(s21_decimal a, s21_decimal b);
 s21_decimal s21_div(s21_decimal a, s21_decimal b);
-void normalize_decs(s21_decimal *a, s21_decimal *b);
 
 // PRINT DECIMAL (WAY TO HEAVY!!!) //
 void print_list(char* list, char exp);
@@ -72,9 +89,23 @@ char *mul_list(char *a, char *b);
 char *form_list_from_dec(char *result, s21_decimal num);
 void print_dec(s21_decimal *num);
 
+// CONVERTERS //
+int s21_from_int_to_decimal(int src, s21_decimal *dst);
+int s21_from_float_to_decimal(float src, s21_decimal *dst);
+int s21_from_decimal_to_int(s21_decimal src, int *dst);
+int s21_from_decimal_to_float(s21_decimal src, float *dst);
+
+// ROUNDERS //
+int s21_floor(s21_decimal value, s21_decimal *result);
+int s21_round(s21_decimal value, s21_decimal *result);
+int s21_truncate(s21_decimal value, s21_decimal *result);
+int s21_negate(s21_decimal value, s21_decimal *result);
+
 // TESTS //
 void add_test(unsigned sign1, unsigned sign2, unsigned num1, unsigned num2, unsigned exp1, unsigned exp2);
 void mul_test(unsigned sign1, unsigned sign2, unsigned num1, unsigned num2, unsigned exp1, unsigned exp2);
 void sub_test(unsigned sign1, unsigned sign2, unsigned num1, unsigned num2, unsigned exp1, unsigned exp2);
+void div_test(unsigned sign1, unsigned sign2, unsigned num1, unsigned num2, unsigned exp1, unsigned exp2);
+
 
 #endif
