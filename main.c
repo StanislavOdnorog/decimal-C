@@ -1,5 +1,4 @@
 #include "main.h"
-#include <math.h>
 #include <stdio.h>
 
 // BIT MANIPULATION //
@@ -252,96 +251,78 @@ s21_decimal s21_pow(s21_decimal a, int exp){
   return res;
 }
 
+void div_helper(s21_decimal *a, s21_decimal *b, s21_decimal *remainder, s21_decimal one, s21_decimal ten, s21_decimal b_copy, int *new_exp, s21_decimal *res, s21_decimal *mult){
+    *remainder = one;
+    *b = b_copy;
+    normalize_decs(a, b);
+    if (s21_is_greater(*b, *a)) {
+      (*new_exp)++;
+      *a = s21_mul(*a, ten);
+      *res = s21_mul(*res, ten);
+      *mult = s21_mul(*mult, ten);
+    }
+    else {
+      while (s21_is_less_or_equal(*b, *a)) {
+        *b = s21_shift_l(*b, 1);
+        *remainder = s21_shift_l(*remainder, 1);
+      }
+
+      do {
+        if (s21_is_greater_or_equal(*a, *b)){
+          *a = s21_sub(*a, *b);
+          *res = s21_add(*res, *remainder);
+        }
+        *remainder = s21_shift_r(*remainder, 1);
+        *b = s21_shift_r(*b, 1);
+      } while (s21_is_not_zero(*remainder));
+    }
+}
+
+
 s21_decimal s21_div(s21_decimal a, s21_decimal b) {
-  s21_decimal ten = {SIGN_HEX_POS,10,0,0};
-  s21_decimal max = {SIGN_HEX_POS,MAX_UNS,MAX_UNS,0xFFFFFFF};
-  s21_decimal one = {SIGN_HEX_POS,1,0,0};
-  s21_decimal five = {SIGN_HEX_POS,5,0,0};
-  s21_decimal zero = {SIGN_HEX_POS,0,0,0};
-  s21_decimal remainder = {SIGN_HEX_POS,1,0,0};
-  s21_decimal res = {SIGN_HEX_POS,1,0,0};
-  s21_decimal mult = {SIGN_HEX_POS,1,0,0};
+  s21_decimal zero = ZERO;
+  s21_decimal one = ONE;
+  s21_decimal res = ONE;
+  s21_decimal remainder = ONE;
+  s21_decimal mult = ONE;
+  s21_decimal five = FIVE;
+  s21_decimal ten = TEN;
+  s21_decimal max = MAX;
 
   int new_exp = get_exp(b) - get_exp(b);
-  bool new_sign = get_sign(a) == get_sign(b);
+  unsigned new_sign = get_sign(a) == get_sign(b);
   set_sign(&a, 1);
   set_sign(&b, 1);
 
-  s21_decimal b_copy = b;
 
-  if (s21_is_zero(b))
+  if (s21_is_zero(b) || s21_is_zero(b))
     return zero;
 
-  if (s21_is_zero(a))
-    return zero;
-
-  if (s21_is_equal(a, b))
+  if (s21_is_equal(a, b)){
+    set_sign(&remainder, new_sign);
     return remainder;
-
-  while (s21_is_not_zero(a) && s21_is_less_or_equal(res, max)) {
-    remainder = one;
-    b = b_copy;
-    normalize_decs(&a, &b);
-    if (s21_is_greater(b, a)) {
-	new_exp++;
-      a = s21_mul(a, ten);
-      res = s21_mul(res, ten);
-      mult = s21_mul(mult, ten);
-    }
-    else {
-      while (s21_is_less_or_equal(b, a)) {
-        b = s21_shift_l(b, 1);
-        remainder = s21_shift_l(remainder, 1);
-      }
-           
-      do {
-        if (s21_is_greater_or_equal(a, b)){
-          a = s21_sub(a, b);
-          res = s21_add(res, remainder);
-        }
-        remainder = s21_shift_r(remainder, 1);
-        b = s21_shift_r(b, 1);
-      } while (s21_is_not_zero(remainder));
-    }
   }
-	if (s21_is_greater(res,max)){
-		
-	    remainder = one;
-	    b = b_copy;
-	    normalize_decs(&a, &b);
-	    if (s21_is_greater(b, a)) {
-		new_exp++;
-	      a = s21_mul(a, ten);
-	      res = s21_mul(res, ten);
-	      mult = s21_mul(mult, ten);
-	    }
-	    else {
-	      while (s21_is_less_or_equal(b, a)) {
-		b = s21_shift_l(b, 1);
-		remainder = s21_shift_l(remainder, 1);
-	      }
-		   
-	      do {
-		if (s21_is_greater_or_equal(a, b)){
-		  a = s21_sub(a, b);
-		  res = s21_add(res, remainder);
-		}
-		remainder = s21_shift_r(remainder, 1);
-		b = s21_shift_r(b, 1);
-	      } while (s21_is_not_zero(remainder));
-	    }
-	}
 
-	normalize_decs(&a,&b_copy);
-	set_exp(&a,0);
-	set_exp(&res,0);
-	set_exp(&b_copy,0);
-	if (a.m[0]*10 / b_copy.m[0] >= 5){
-		res = s21_add(res, one);
-	}
-	res = sub_fract(res, mult);
+  s21_decimal b_copy = b;
+  while (s21_is_not_zero(a) && s21_is_less_or_equal(res, max)) {
+    div_helper(&a, &b, &remainder, one, ten, b_copy, &new_exp, &res, &mult);
+  }
+  if (s21_is_greater(res,max)){
+    div_helper(&a, &b, &remainder, one, ten, b_copy, &new_exp, &res, &mult);
+  }
+
+  normalize_decs(&a,&b_copy);
+  set_exp(&a,0);
+  set_exp(&res,0);
+  set_exp(&b_copy,0);
+
+  if (a.m[0]*10 / b_copy.m[0] >= 5){
+    res = s21_add(res, one);
+  }
+
+  res = sub_fract(res, mult);
   set_exp(&res, new_exp);
-
+  set_sign(&res, new_sign);
   return res;
 }
 
@@ -355,6 +336,68 @@ void normalize_decs(s21_decimal *a, s21_decimal *b){
       *b = s21_mul(*b,ten);
     }
   }
+}
+
+// CONVERTERS //
+int s21_from_int_to_decimal(int src, s21_decimal *dst){
+  // TODO: make error exception
+  bool sign = src > 0;
+  dst->e = 0;
+  set_sign(dst, sign);
+  if (!sign)
+    src = -src;
+  dst->m[0] = src;
+  return 1;
+}
+
+int s21_from_decimal_to_int(s21_decimal src, int *dst) {
+  // TODO: make error exception
+
+  s21_decimal ten = TEN;
+  s21_decimal one = ONE;
+  unsigned new_sign = get_sign(src);
+  set_sign(&src, 1);
+  unsigned temp = 0;
+
+  normalize_decs(&src, &one);
+  if (s21_is_greater(src, one)) {
+      unsigned mult = 1;
+    char result[MAX_10_EXP+1] = {0};
+    form_list_from_dec(result, src);
+    for (int i = MAX_10_EXP - 1 - get_exp(src); i > 0; i--){
+      temp += result[i] * mult;
+      mult *= 10;
+    }
+  }
+  *dst = temp;
+  
+  if (!new_sign)
+    *dst = -*dst;
+
+  return 1;
+}
+
+int s21_from_float_to_decimal(float src, s21_decimal *dst);
+int s21_from_decimal_to_float(s21_decimal src, float *dst);
+
+// ROUNDERS //
+int s21_floor(s21_decimal value, s21_decimal *result);
+int s21_round(s21_decimal value, s21_decimal *result);
+
+int s21_truncate(s21_decimal value, s21_decimal *result) {
+  // TODO: make error exception
+  int res = 0;
+  s21_from_decimal_to_int(value, &res);
+  s21_from_int_to_decimal(res, result);
+
+  return 1;
+}
+
+int s21_negate(s21_decimal value, s21_decimal *result){
+  // TODO: make error exception
+  set_exp(&value, !get_exp(value));
+  *result = value;
+  return 1;
 }
 
 // PRINT DECIMAL (WAY TO HEAVY!!!) //
@@ -522,6 +565,47 @@ void sub_test(unsigned sign1, unsigned sign2, unsigned num1, unsigned num2, unsi
   printf("------------------\n");
 }
 
+void from_dec_to_int_test(unsigned sign1, unsigned num1, unsigned exp1){
+  s21_decimal test = {sign1, num1, 0, 0};
+  set_exp(&test, exp1);
+
+  print_dec(&test);
+  // print_dec_bin(test);
+  printf("toINT=\n");
+  int result = 0;
+  s21_from_decimal_to_int(test, &result);
+
+  printf("%d\n", result);
+  // print_dec_bin(result);
+  printf("------------------\n");
+}
+
+void from_int_to_dec_test(int value){
+  printf("%d\n", value);
+  // print_dec_bin(test);
+  printf("toDEC=\n");
+  s21_decimal result = ZERO;
+  s21_from_int_to_decimal(value, &result);
+
+  print_dec(&result);
+  // print_dec_bin(result);
+  printf("------------------\n");
+}
+
+void truncate_test(s21_decimal value){
+  print_dec(&value);
+  // print_dec_bin(test);
+  
+  printf("Truncate=\n");
+  s21_decimal result = ZERO;
+  s21_truncate(value, &result);
+
+  print_dec(&result);
+  // print_dec_bin(result);
+  printf("------------------\n");
+}
+
+
 int main(int argc, char *argv[])
 {
   // MAX AND MIN VALUES //
@@ -586,7 +670,7 @@ int main(int argc, char *argv[])
   div_test(SIGN_HEX_POS, SIGN_HEX_NEG, 1, 4444, 0, MAX_10_EXP-5);
   div_test(SIGN_HEX_POS, SIGN_HEX_POS, 1, 22233, 0, MAX_10_EXP-5);
 
-printf("\n------ KATYA'S TESTS ------\n");
+  printf("\n------ KATYA'S TESTS ------\n");
   div_test(SIGN_HEX_POS, SIGN_HEX_POS, 0, 0, 0, 0);
   div_test(SIGN_HEX_POS, SIGN_HEX_POS, 1, 00, 0, 0);
   div_test(SIGN_HEX_POS, SIGN_HEX_NEG, 00, 1, 0, 0);
@@ -598,6 +682,44 @@ printf("\n------ KATYA'S TESTS ------\n");
   div_test(SIGN_HEX_POS, SIGN_HEX_POS, 1, 3, 0, 0);
   div_test(SIGN_HEX_POS, SIGN_HEX_POS, 888888889, 9, 5, 0);
   div_test(SIGN_HEX_POS, SIGN_HEX_POS, 555556548, 7, 4, 0);
+
+  printf("\n------ CONVERETER TESTS ------\n");
+  printf("-------- INT TO DEC --------\n");
+  from_int_to_dec_test(0);
+  from_int_to_dec_test(4);
+  from_int_to_dec_test(10);
+  from_int_to_dec_test(2147483647);
+  from_int_to_dec_test(-0);
+  from_int_to_dec_test(-4);
+  from_int_to_dec_test(-10);
+  from_int_to_dec_test(-2147483648);
+
+  printf("-------- DEC TO INT --------\n");
+  from_dec_to_int_test(SIGN_HEX_POS, 0, 0);
+  from_dec_to_int_test(SIGN_HEX_NEG, 1, 0);
+  from_dec_to_int_test(SIGN_HEX_POS, 1, 0);
+  from_dec_to_int_test(SIGN_HEX_POS, 1, MAX_10_EXP-2);
+  from_dec_to_int_test(SIGN_HEX_POS, 999999999, MAX_10_EXP-7);
+  from_dec_to_int_test(SIGN_HEX_POS, 999999999, 0);
+  from_dec_to_int_test(SIGN_HEX_POS, 1111111111, 5);
+  from_dec_to_int_test(SIGN_HEX_POS, 2147483647, 0);
+  from_dec_to_int_test(SIGN_HEX_NEG, 2147483648, 0);
+  from_dec_to_int_test(SIGN_HEX_POS, 999999999, 8);
+  from_dec_to_int_test(SIGN_HEX_POS, 299999999, 7);
+
+  printf("-------- TRUNCATE --------\n");
+  s21_decimal five = FIVE;
+  s21_decimal ten = TEN;
+  s21_decimal one = ONE;
+  s21_decimal max = MAX;
+  truncate_test(five);
+  truncate_test(ten);
+  truncate_test(s21_div(s21_add(one, one), s21_add(s21_add(one,one), one)));
+  truncate_test(s21_div(one,s21_mul(ten, five)));
+  truncate_test(s21_mul(s21_mul(ten, ten), s21_mul(ten, ten)));
+  truncate_test(s21_div(one, s21_mul(s21_mul(s21_mul(s21_mul(five,five),s21_mul(five,five)),s21_mul(s21_mul(five,five),s21_mul(five,five))),s21_mul(s21_mul(s21_mul(five,five),s21_mul(five,five)),s21_mul(s21_mul(five,five),s21_mul(five,five))))));
+  truncate_test(s21_div(s21_sub(max, s21_mul(ten,ten)),s21_mul(s21_mul(s21_mul(s21_mul(ten,ten), ten), s21_mul(s21_mul(ten,ten), s21_mul(ten,ten))),s21_mul(s21_mul(s21_mul(ten,ten), s21_mul(ten,ten)), s21_mul(s21_mul(ten,ten), s21_mul(s21_mul(ten,ten),s21_mul(s21_mul(ten,ten), s21_mul(ten,ten))))))));
+  truncate_test(s21_sub(s21_div(one, five), s21_mul(one, ten)));
 
   return EXIT_SUCCESS;
 }
