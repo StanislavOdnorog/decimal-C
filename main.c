@@ -377,8 +377,67 @@ int s21_from_decimal_to_int(s21_decimal src, int *dst) {
   return 1;
 }
 
-int s21_from_float_to_decimal(float src, s21_decimal *dst);
-int s21_from_decimal_to_float(s21_decimal src, float *dst);
+int s21_from_float_to_decimal(float src, s21_decimal *dst){
+  // TODO: make error exception
+  s21_decimal ten = TEN;
+  s21_decimal temp = ZERO;
+  bool sign = src > 0;
+  dst->e = 0;
+  set_sign(dst, 1);
+  if (!sign)
+    src = -src;
+
+  unsigned *ptr = (unsigned*) &src;
+  dst->m[0] = trunc(src);
+
+  unsigned exp = 0;
+  while ((float)src != (float)trunc(src) && exp < 7){
+    src -= trunc(src);
+    src *= 10.0;
+
+    s21_from_int_to_decimal((int)src, &temp);
+
+    *dst = s21_mul(*dst, ten);
+    *dst = s21_add(*dst, temp);
+    exp++;
+  }
+
+  set_exp(dst, exp);
+  set_sign(dst, sign);
+
+  return 1;
+}
+
+int s21_from_decimal_to_float(s21_decimal src, float *dst){
+   // TODO: make error exception
+  s21_decimal ten = TEN;
+  s21_decimal one = ONE;
+  unsigned new_sign = get_sign(src);
+  set_sign(&src, 1);
+
+  unsigned temp = 0;
+  normalize_decs(&src, &one);
+  unsigned mult = 1;
+  char result[MAX_10_EXP+1] = {0};
+  form_list_from_dec(result, src);
+  for (int i = MAX_10_EXP - 1; i > 0; i--){
+    temp += result[i] * mult;
+    mult *= 10;
+  }
+
+  float res = 0.;
+
+  *dst = (double)temp;
+  for (int i = 0; i < get_exp(src); i++) {
+    *dst /= (double)round(10.0);
+  }
+
+
+  if (!new_sign)
+    *dst = -*dst;
+
+  return 1;
+}
 
 // ROUNDERS //
 int s21_floor(s21_decimal value, s21_decimal *result);
@@ -389,7 +448,6 @@ int s21_truncate(s21_decimal value, s21_decimal *result) {
   int res = 0;
   s21_from_decimal_to_int(value, &res);
   s21_from_int_to_decimal(res, result);
-
   return 1;
 }
 
@@ -571,7 +629,7 @@ void from_dec_to_int_test(unsigned sign1, unsigned num1, unsigned exp1){
 
   print_dec(&test);
   // print_dec_bin(test);
-  printf("toINT=\n");
+  printf("DECtoINT=\n");
   int result = 0;
   s21_from_decimal_to_int(test, &result);
 
@@ -583,7 +641,7 @@ void from_dec_to_int_test(unsigned sign1, unsigned num1, unsigned exp1){
 void from_int_to_dec_test(int value){
   printf("%d\n", value);
   // print_dec_bin(test);
-  printf("toDEC=\n");
+  printf("INTtoDEC=\n");
   s21_decimal result = ZERO;
   s21_from_int_to_decimal(value, &result);
 
@@ -591,6 +649,35 @@ void from_int_to_dec_test(int value){
   // print_dec_bin(result);
   printf("------------------\n");
 }
+
+
+void from_float_to_dec_test(float value){
+  printf("%f\n", value);
+  // print_dec_bin(test);
+  printf("FLOATtoDEC=\n");
+  s21_decimal result = ZERO;
+  s21_from_float_to_decimal(value, &result);
+
+  print_dec(&result);
+  // print_dec_bin(result);
+  printf("------------------\n");
+}
+
+void from_dec_to_float_test(unsigned sign1, unsigned num1, unsigned exp1){
+  s21_decimal test = {sign1, num1, 0, 0};
+  set_exp(&test, exp1);
+
+  print_dec(&test);
+  // print_dec_bin(test);
+  printf("DECtoFLOAT=\n");
+  float result = 0;
+  s21_from_decimal_to_float(test, &result);
+
+  printf("%f\n", result);
+  // print_dec_bin(result);
+  printf("------------------\n");
+}
+
 
 void truncate_test(s21_decimal value){
   print_dec(&value);
@@ -720,6 +807,30 @@ int main(int argc, char *argv[])
   truncate_test(s21_div(one, s21_mul(s21_mul(s21_mul(s21_mul(five,five),s21_mul(five,five)),s21_mul(s21_mul(five,five),s21_mul(five,five))),s21_mul(s21_mul(s21_mul(five,five),s21_mul(five,five)),s21_mul(s21_mul(five,five),s21_mul(five,five))))));
   truncate_test(s21_div(s21_sub(max, s21_mul(ten,ten)),s21_mul(s21_mul(s21_mul(s21_mul(ten,ten), ten), s21_mul(s21_mul(ten,ten), s21_mul(ten,ten))),s21_mul(s21_mul(s21_mul(ten,ten), s21_mul(ten,ten)), s21_mul(s21_mul(ten,ten), s21_mul(s21_mul(ten,ten),s21_mul(s21_mul(ten,ten), s21_mul(ten,ten))))))));
   truncate_test(s21_sub(s21_div(one, five), s21_mul(one, ten)));
+
+  printf("-------- FROM FLOAT TO DEC --------\n");
+  from_float_to_dec_test(0.0);
+  from_float_to_dec_test(4.99);
+  from_float_to_dec_test(10.000001);
+  from_float_to_dec_test(214.424);
+  from_float_to_dec_test(-0.224);
+  from_float_to_dec_test(0.5);
+  from_float_to_dec_test(0.75);
+  from_float_to_dec_test(-2147.2424);
+
+
+  printf("-------- DECT TO FLOAT --------\n");
+  from_dec_to_float_test(SIGN_HEX_POS, 0, 0);
+  from_dec_to_float_test(SIGN_HEX_NEG, 1, 0);
+  from_dec_to_float_test(SIGN_HEX_POS, 1, 0);
+  from_dec_to_float_test(SIGN_HEX_POS, 1, MAX_10_EXP-2);
+  from_dec_to_float_test(SIGN_HEX_POS, 999999929, MAX_10_EXP-7);
+  from_dec_to_float_test(SIGN_HEX_POS, 999999, 2);
+  from_dec_to_float_test(SIGN_HEX_POS, 1111111111, 5);
+  from_dec_to_float_test(SIGN_HEX_POS, 214748, 3);
+  from_dec_to_float_test(SIGN_HEX_NEG, 214748, 0);
+  from_dec_to_float_test(SIGN_HEX_POS, 9999999, 4);
+  from_dec_to_float_test(SIGN_HEX_POS, 2999999, 7);
 
   return EXIT_SUCCESS;
 }
