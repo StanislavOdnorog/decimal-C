@@ -409,7 +409,7 @@ int s21_from_float_to_decimal(float src, s21_decimal *dst){
 }
 
 int s21_from_decimal_to_float(s21_decimal src, float *dst){
-   // TODO: make error exception
+  // TODO: make error exception
   s21_decimal ten = TEN;
   s21_decimal one = ONE;
   unsigned new_sign = get_sign(src);
@@ -432,7 +432,6 @@ int s21_from_decimal_to_float(s21_decimal src, float *dst){
     *dst /= (double)round(10.0);
   }
 
-
   if (!new_sign)
     *dst = -*dst;
 
@@ -440,8 +439,47 @@ int s21_from_decimal_to_float(s21_decimal src, float *dst){
 }
 
 // ROUNDERS //
-int s21_floor(s21_decimal value, s21_decimal *result);
-int s21_round(s21_decimal value, s21_decimal *result);
+int s21_floor(s21_decimal value, s21_decimal *result){
+  // TODO: make error exception
+  s21_decimal five = FIVE;
+  s21_decimal one = ONE;
+
+  set_exp(&five, 1);
+  unsigned new_sign = get_sign(value);
+  set_sign(&value, 1);
+
+  s21_truncate(value, result);
+
+  normalize_decs(&value, result);
+  s21_decimal rest = s21_sub(value, *result);
+
+  if (!new_sign)
+    *result = s21_add(*result, one);
+
+  set_sign(result, new_sign);
+  return 1;
+}
+
+int s21_round(s21_decimal value, s21_decimal *result){
+  // TODO: make error exception
+  s21_decimal five = FIVE;
+  s21_decimal one = ONE;
+
+  set_exp(&five, 1);
+  unsigned new_sign = get_sign(value);
+  set_sign(&value, 1);
+
+  s21_truncate(value, result);
+
+  normalize_decs(&value, result);
+  s21_decimal rest = s21_sub(value, *result);
+  if (s21_is_greater_or_equal(rest, five)){
+    *result = s21_add(*result, one);
+  }
+
+  set_sign(result, new_sign);
+  return 1;
+}
 
 int s21_truncate(s21_decimal value, s21_decimal *result) {
   // TODO: make error exception
@@ -693,6 +731,37 @@ void truncate_test(s21_decimal value){
 }
 
 
+void round_test(unsigned sign1, unsigned num1, unsigned exp1){
+ s21_decimal test = {sign1, num1, 0, 0};
+  set_exp(&test, exp1);
+
+  print_dec(&test);
+  // print_dec_bin(test);
+  printf("ROUND=\n");
+  s21_decimal result;
+  s21_round(test, &result);
+
+  print_dec(&result);
+  // print_dec_bin(result);
+  printf("------------------\n");
+}
+
+void floor_test(unsigned sign1, unsigned num1, unsigned exp1){
+ s21_decimal test = {sign1, num1, 0, 0};
+  set_exp(&test, exp1);
+
+  print_dec(&test);
+  // print_dec_bin(test);
+  printf("FLOOR=\n");
+  s21_decimal result;
+  s21_floor(test, &result);
+
+  print_dec(&result);
+  // print_dec_bin(result);
+  printf("------------------\n");
+}
+
+
 int main(int argc, char *argv[])
 {
   // MAX AND MIN VALUES //
@@ -831,6 +900,32 @@ int main(int argc, char *argv[])
   from_dec_to_float_test(SIGN_HEX_NEG, 214748, 0);
   from_dec_to_float_test(SIGN_HEX_POS, 9999999, 4);
   from_dec_to_float_test(SIGN_HEX_POS, 2999999, 7);
+
+  printf("-------- ROUND --------\n");
+  round_test(SIGN_HEX_POS, 0, 0);
+  round_test(SIGN_HEX_NEG, 1, 0);
+  round_test(SIGN_HEX_POS, 1, 0);
+  round_test(SIGN_HEX_POS, 1, MAX_10_EXP-2);
+  round_test(SIGN_HEX_POS, 999999929, MAX_10_EXP-7);
+  round_test(SIGN_HEX_POS, 999999, 2);
+  round_test(SIGN_HEX_POS, 1111111111, 5);
+  round_test(SIGN_HEX_POS, 214748, 3);
+  round_test(SIGN_HEX_NEG, 214748, 0);
+  round_test(SIGN_HEX_POS, 9999999, 4);
+  round_test(SIGN_HEX_POS, 2999999, 7);
+
+  printf("-------- FLOOR --------\n");
+  floor_test(SIGN_HEX_POS, 0, 0);
+  floor_test(SIGN_HEX_NEG, 1, 0);
+  floor_test(SIGN_HEX_POS, 1, 0);
+  floor_test(SIGN_HEX_POS, 1, MAX_10_EXP-2);
+  floor_test(SIGN_HEX_NEG, 999999929, MAX_10_EXP-7);
+  floor_test(SIGN_HEX_POS, 999999, 2);
+  floor_test(SIGN_HEX_POS, 1111111111, 5);
+  floor_test(SIGN_HEX_POS, 214748, 3);
+  floor_test(SIGN_HEX_NEG, 214748, 0);
+  floor_test(SIGN_HEX_POS, 9999999, 4);
+  floor_test(SIGN_HEX_POS, 2999999, 7);
 
   return EXIT_SUCCESS;
 }
