@@ -229,7 +229,13 @@ void div_helper(s21_decimal *a, s21_decimal *b, s21_decimal *remainder, s21_deci
 }
 
 int s21_add(s21_decimal value_1, s21_decimal value_2, s21_decimal *result){
-  // TODO: FIX INPUT AND RETURN
+  s21_decimal inf = INF;
+  s21_decimal neg_inf = NEG_INF;
+  if(s21_is_greater(value_1, inf) || s21_is_greater(value_2, inf))
+    return 1;
+  if(s21_is_less(value_1, neg_inf) || s21_is_less(value_2, neg_inf))
+    return 2;
+
   normalize_decs(&value_1, &value_2);
   s21_decimal zero = ZERO;
   s21_decimal value_1_copy = {value_1.data, value_1.mantis[0], value_1.mantis[1], value_1.mantis[2]};
@@ -277,14 +283,24 @@ int s21_add(s21_decimal value_1, s21_decimal value_2, s21_decimal *result){
 }
 
 int s21_sub(s21_decimal value_1, s21_decimal value_2, s21_decimal *result){ 
-  // TODO: FIX INPUT AND RETURN
+  s21_decimal inf = INF;
+  s21_decimal neg_inf = NEG_INF;
+  if(s21_is_greater(value_1, inf) || s21_is_greater(value_2, inf))
+    return 1;
+  if(s21_is_less(value_1, neg_inf) || s21_is_less(value_2, neg_inf))
+    return 2;
   set_sign(&value_2, !get_sign(value_2));
   s21_add(value_1, value_2, result);
   return 0;
 }
 
 int s21_mul(s21_decimal value_1, s21_decimal value_2, s21_decimal *result){
-  // TODO: FIX INPUT AND RETURN
+  s21_decimal inf = INF;
+  s21_decimal neg_inf = NEG_INF;
+  if(s21_is_greater(value_1, inf) || s21_is_greater(value_2, inf))
+    return 1;
+  if(s21_is_less(value_1, neg_inf) || s21_is_less(value_2, neg_inf))
+    return 2;
   s21_decimal res = ZERO;
   s21_decimal zero = ZERO;
   unsigned new_exp = get_exp(value_1) + get_exp(value_2);
@@ -318,6 +334,12 @@ int s21_div(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
   set_sign(&value_1, 1);
   set_sign(&value_2, 1);
 
+  s21_decimal inf = INF;
+  s21_decimal neg_inf = NEG_INF;
+  if(s21_is_greater(value_1, inf) || s21_is_greater(value_2, inf))
+    return 1;
+  if(s21_is_less(value_1, neg_inf) || s21_is_less(value_2, neg_inf))
+    return 2;
   if (s21_is_zero(value_2)){
     set_sign(&remainder, new_sign);
     *result = remainder;
@@ -357,7 +379,6 @@ int s21_div(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
 
 // CONVERTERS //
 int s21_from_int_to_decimal(int src, s21_decimal *dst){
-  // TODO: make error exception
   bool sign = src > 0;
   dst->data = 0;
   set_sign(dst, sign);
@@ -368,7 +389,18 @@ int s21_from_int_to_decimal(int src, s21_decimal *dst){
 }
 
 int s21_from_decimal_to_int(s21_decimal src, int *dst) {
-  // TODO: make error exception
+  s21_decimal compare_pos = {SIGN_HEX_POS, 0xFFFFFFF, 0, 0};
+  s21_decimal compare_neg = {SIGN_HEX_NEG, 0xFFFFFFF, 0, 0};
+  if (s21_is_greater(src, compare_pos))
+    return 1;
+  if (s21_is_less(src, compare_neg))
+    return 1;
+  s21_decimal inf = INF;
+  s21_decimal neg_inf = NEG_INF;
+  if(s21_is_greater(src, inf))
+    return 1;
+  if(s21_is_less(src, neg_inf))
+    return 1;
 
   s21_decimal ten = TEN;
   s21_decimal one = ONE;
@@ -426,7 +458,13 @@ int s21_from_float_to_decimal(float src, s21_decimal *dst){
 }
 
 int s21_from_decimal_to_float(s21_decimal src, float *dst){
-  // TODO: make error exception
+  s21_decimal compare_pos = {SIGN_HEX_POS, 0xFFFFFFF, 0, 0};
+  s21_decimal compare_neg = {SIGN_HEX_NEG, 0xFFFFFFF, 0, 0};
+  if (s21_is_greater(src, compare_pos))
+    return 1;
+  if (s21_is_less(src, compare_neg))
+    return 1;
+
   s21_decimal ten = TEN;
   s21_decimal one = ONE;
   unsigned new_sign = get_sign(src);
@@ -457,7 +495,12 @@ int s21_from_decimal_to_float(s21_decimal src, float *dst){
 
 // ROUNDERS //
 int s21_floor(s21_decimal value, s21_decimal *result){
-  // TODO: make error exception
+  s21_decimal inf = INF;
+  s21_decimal neg_inf = NEG_INF;
+  if(s21_is_greater(value, inf))
+    return 1;
+  if(s21_is_less(value, neg_inf))
+    return 1;
   *result = value;
   s21_decimal five = FIVE;
   s21_decimal one = ONE;
@@ -479,7 +522,12 @@ int s21_floor(s21_decimal value, s21_decimal *result){
 }
 
 int s21_round(s21_decimal value, s21_decimal *result){
-  // TODO: make error exception
+  s21_decimal inf = INF;
+  s21_decimal neg_inf = NEG_INF;
+  if(s21_is_greater(value, inf))
+    return 1;
+  if(s21_is_less(value, neg_inf))
+    return 1;
   *result = value;
   s21_decimal five = FIVE;
   s21_decimal one = ONE;
@@ -502,7 +550,12 @@ int s21_round(s21_decimal value, s21_decimal *result){
 }
 
 int s21_truncate(s21_decimal value, s21_decimal *result) {
-  // TODO: make error exception
+  s21_decimal inf = INF;
+  s21_decimal neg_inf = NEG_INF;
+  if(s21_is_greater(value, inf))
+    return 1;
+  if(s21_is_less(value, neg_inf))
+    return 1;
   int res = 0;
   *result = value;
   s21_from_decimal_to_int(value, &res);
@@ -511,7 +564,12 @@ int s21_truncate(s21_decimal value, s21_decimal *result) {
 }
 
 int s21_negate(s21_decimal value, s21_decimal *result){
-  // TODO: make error exception
+  s21_decimal inf = INF;
+  s21_decimal neg_inf = NEG_INF;
+  if(s21_is_greater(value, inf))
+    return 1;
+  if(s21_is_less(value, neg_inf))
+    return 1;
   set_exp(&value, !get_exp(value));
   *result = value;
   return 1;
