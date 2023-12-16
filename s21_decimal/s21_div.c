@@ -1,5 +1,5 @@
 #include "../s21_decimal.h"
- 
+
 int s21_div(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
   s21_decimal zero = ZERO();
   s21_decimal one = ONE();
@@ -10,7 +10,6 @@ int s21_div(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
   s21_decimal ten = TEN();
   s21_decimal max = MAX();
   s21_decimal inf = INF();
-  s21_decimal neg_inf = NEG_INF();
 
   int new_exp = get_exp(value_2) - get_exp(value_2);
   unsigned new_sign = get_sign(value_1) == get_sign(value_2);
@@ -18,32 +17,32 @@ int s21_div(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
   set_sign(&value_2, 1);
 
   int error_code = 0;
-  if(s21_is_greater(value_1, inf) || s21_is_greater(value_2, inf))
+  if (s21_is_greater(value_1, inf) || s21_is_greater(value_2, inf))
     error_code = 1;
-  if(s21_is_less(value_1, neg_inf) || s21_is_less(value_2, neg_inf))
-    error_code = 2;
 
-  if (s21_is_zero(value_2)){
+  if (s21_is_zero(value_2)) {
     set_sign(&remainder, new_sign);
-    *result = remainder;
-  } else if (s21_is_equal(value_1, value_2)){
+    *result = zero;
+  } else if (s21_is_equal(value_1, value_2)) {
     set_sign(&remainder, new_sign);
-    *result = remainder;
+    *result = one;
   } else {
     s21_decimal b_copy = value_2;
     while (s21_is_not_zero(value_1) && s21_is_less_or_equal(res, max)) {
-      div_helper(&value_1, &value_2, &remainder, one, ten, b_copy, &new_exp, &res, &mult);
+      div_helper(&value_1, &value_2, &remainder, one, ten, b_copy, &new_exp,
+                 &res, &mult);
     }
-    if (s21_is_greater(res,max)){
-      div_helper(&value_1, &value_2, &remainder, one, ten, b_copy, &new_exp, &res, &mult);
+    if (s21_is_greater(res, max)) {
+      div_helper(&value_1, &value_2, &remainder, one, ten, b_copy, &new_exp,
+                 &res, &mult);
     }
 
-    normalize_decs(&value_1,&b_copy);
-    set_exp(&value_1,0);
-    set_exp(&res,0);
-    set_exp(&b_copy,0);
+    normalize_decs(&value_1, &b_copy);
+    set_exp(&value_1, 0);
+    set_exp(&res, 0);
+    set_exp(&b_copy, 0);
 
-    if (value_1.mantis[0]*10 / b_copy.mantis[0] >= 5){
+    if (value_1.mantis[0] * 10 / b_copy.mantis[0] >= 5) {
       s21_add(res, one, &res);
     }
 

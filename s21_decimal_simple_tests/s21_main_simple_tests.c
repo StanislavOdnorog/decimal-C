@@ -1,7 +1,6 @@
 #include "../s21_decimal.h"
 
-int main(void)
-{
+int main(void) {
   // MAX AND MIN VALUES //
 
   printf("---------MAX POS NUMBER--------\n");
@@ -31,7 +30,7 @@ int main(void)
 
   printf("\n");
 
-  // ARITHMETICS // 
+   // ARITHMETICS //
   add_test(SIGN_HEX_NEG, SIGN_HEX_POS, 3127, 751, 5, 10);
   add_test(SIGN_HEX_NEG, SIGN_HEX_NEG, 567, 333, 1, 1);
   add_test(SIGN_HEX_POS, SIGN_HEX_POS, 234234, 112321, 0, 0);
@@ -124,6 +123,14 @@ int main(void)
   from_float_to_dec_test(0.75);
   from_float_to_dec_test(-2147.2424);
 
+  from_float_to_dec_test(0.39);
+  from_float_to_dec_test(-0.99);
+  from_float_to_dec_test(-4.42424);
+  from_float_to_dec_test(33333.123);
+  from_float_to_dec_test(-0.34343);
+  from_float_to_dec_test(-4240.2421);
+  from_float_to_dec_test(-0.00004);
+  from_float_to_dec_test(-2147.2424);
 
   printf("-------- DECT TO FLOAT --------\n");
   from_dec_to_float_test(SIGN_HEX_POS, 0, 0);
@@ -137,6 +144,18 @@ int main(void)
   from_dec_to_float_test(SIGN_HEX_NEG, 214748, 0);
   from_dec_to_float_test(SIGN_HEX_POS, 9999999, 4);
   from_dec_to_float_test(SIGN_HEX_POS, 2999999, 7);
+
+  from_dec_to_float_test(SIGN_HEX_POS, 123123, 0);
+  from_dec_to_float_test(SIGN_HEX_NEG, 999999, 0);
+  from_dec_to_float_test(SIGN_HEX_POS, 4214, 0);
+  from_dec_to_float_test(SIGN_HEX_POS, 412412, MAX_DECIMAL_EXP-2);
+  from_dec_to_float_test(SIGN_HEX_NEG, 4124214, MAX_DECIMAL_EXP-7);
+  from_dec_to_float_test(SIGN_HEX_POS, 4124214, 10);
+  from_dec_to_float_test(SIGN_HEX_POS, 123, 4);
+  from_dec_to_float_test(SIGN_HEX_NEG, 453621, 6);
+  from_dec_to_float_test(SIGN_HEX_NEG, 123, 1);
+  from_dec_to_float_test(SIGN_HEX_POS, 4444, 3);
+  from_dec_to_float_test(SIGN_HEX_POS, 4521, 2);
 
   printf("-------- ROUND --------\n");
   round_test(SIGN_HEX_POS, 0, 0);

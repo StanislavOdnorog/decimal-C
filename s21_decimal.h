@@ -46,8 +46,6 @@ bool get_sign(s21_decimal decimal);
 void set_sign(s21_decimal *decimal, bool sign);
 unsigned get_exp(s21_decimal decimal);
 void set_exp(s21_decimal *num, unsigned n);
-void add_exp(s21_decimal *decimal, unsigned value);
-void sub_exp(s21_decimal *decimal, unsigned value);
 void s21_decl_to_null(s21_decimal *decl);
 
 // COMPARATORS //

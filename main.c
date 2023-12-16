@@ -16,27 +16,25 @@ void run_testcase(Suite *testcase) {
 
 void run_tests(void) {
   Suite *list_case[] = {
-      // suite_s21_from_decimal_to_float_ste(),
-      // suite_s21_from_decimal_to_int_ste(),
-      // suite_s21_is_greater_ste(), 
-      // suite_s21_is_equal_ste(),
-      // suite_s21_truncate_ste(),
-      // suite_s21_negate_ste(),
-      // // suite_s21_add_ste(), 
-      // suite_s21_is_not_equal_ste(),
-      // suite_s21_is_greater_or_equal_ste(), 
-      // suite_s21_is_less_ste(),
-      // suite_s21_is_less_or_equal_ste(),
-      // // suite_s21_sub_ste(),
-      // suite_s21_round_ste(),
-      // suite_s21_floor_ste(),
-      // // suite_s21_mul_ste(),
-      // suite_s21_div_ste(),
-      // suite_s21_mod_ste(),
+      suite_s21_decimal_test(),
+      suite_s21_from_decimal_to_float_ste(),
+      suite_s21_from_decimal_to_int_ste(),
+      suite_s21_is_equal_ste(),
+      suite_s21_truncate_ste(),
+      suite_s21_negate_ste(),
+      suite_s21_add_ste(),
+      suite_s21_is_not_equal_ste(),
+      suite_s21_sub_ste(),
+      suite_s21_round_ste(),
+      suite_s21_floor_ste(),
+      suite_s21_mul_ste(),
+      suite_s21_div_ste(),
       NULL,
   };
+  for (int i = 0; i < 13; i++) {
+    run_testcase(list_case[i]);
+  }
 }
-
 
 float Rand_R(float a, float b) {
   float m = (float)rand() / RAND_MAX;

@@ -1,7 +1,8 @@
 #include "../s21_decimal.h"
 
 // TESTS //
-void add_test(unsigned sign1, unsigned sign2, unsigned num1, unsigned num2, unsigned exp1, unsigned exp2){
+void add_test(unsigned sign1, unsigned sign2, unsigned num1, unsigned num2,
+              unsigned exp1, unsigned exp2) {
   s21_decimal test = {sign1, num1, 0, 0};
   set_exp(&test, exp1);
   s21_decimal test2 = {sign2, num2, 0, 0};
@@ -21,7 +22,8 @@ void add_test(unsigned sign1, unsigned sign2, unsigned num1, unsigned num2, unsi
   printf("------------------\n");
 }
 
-void mul_test(unsigned sign1, unsigned sign2, unsigned num1, unsigned num2, unsigned exp1, unsigned exp2){
+void mul_test(unsigned sign1, unsigned sign2, unsigned num1, unsigned num2,
+              unsigned exp1, unsigned exp2) {
   s21_decimal test = {sign1, num1, 0, 0};
   set_exp(&test, exp1);
   s21_decimal test2 = {sign2, num2, 0, 0};
@@ -36,13 +38,13 @@ void mul_test(unsigned sign1, unsigned sign2, unsigned num1, unsigned num2, unsi
   s21_decimal result;
   s21_mul(test, test2, &result);
 
-
   print_dec(&result);
   // print_dec_bin(result);
   printf("------------------\n");
 }
 
-void div_test(unsigned sign1, unsigned sign2, unsigned num1, unsigned num2, unsigned exp1, unsigned exp2){
+void div_test(unsigned sign1, unsigned sign2, unsigned num1, unsigned num2,
+              unsigned exp1, unsigned exp2) {
   s21_decimal test = {sign1, num1, 0, 0};
   set_exp(&test, exp1);
   s21_decimal test2 = {sign2, num2, 0, 0};
@@ -62,7 +64,8 @@ void div_test(unsigned sign1, unsigned sign2, unsigned num1, unsigned num2, unsi
   printf("------------------\n");
 }
 
-void sub_test(unsigned sign1, unsigned sign2, unsigned num1, unsigned num2, unsigned exp1, unsigned exp2){
+void sub_test(unsigned sign1, unsigned sign2, unsigned num1, unsigned num2,
+              unsigned exp1, unsigned exp2) {
   s21_decimal test = {sign1, num1, 0, 0};
   set_exp(&test, exp1);
   s21_decimal test2 = {sign2, num2, 0, 0};
@@ -83,7 +86,7 @@ void sub_test(unsigned sign1, unsigned sign2, unsigned num1, unsigned num2, unsi
   printf("------------------\n");
 }
 
-void from_dec_to_int_test(unsigned sign1, unsigned num1, unsigned exp1){
+void from_dec_to_int_test(unsigned sign1, unsigned num1, unsigned exp1) {
   s21_decimal test = {sign1, num1, 0, 0};
   set_exp(&test, exp1);
 
@@ -98,7 +101,7 @@ void from_dec_to_int_test(unsigned sign1, unsigned num1, unsigned exp1){
   printf("------------------\n");
 }
 
-void from_int_to_dec_test(int value){
+void from_int_to_dec_test(int value) {
   printf("%d\n", value);
   // print_dec_bin(test);
   printf("INTtoDEC=\n");
@@ -110,8 +113,7 @@ void from_int_to_dec_test(int value){
   printf("------------------\n");
 }
 
-
-void from_float_to_dec_test(float value){
+void from_float_to_dec_test(float value) {
   printf("%f\n", value);
   // print_dec_bin(test);
   printf("FLOATtoDEC=\n");
@@ -123,13 +125,13 @@ void from_float_to_dec_test(float value){
   printf("------------------\n");
 }
 
-void from_dec_to_float_test(unsigned sign1, unsigned num1, unsigned exp1){
+void from_dec_to_float_test(unsigned sign1, unsigned num1, unsigned exp1) {
   s21_decimal test = {sign1, num1, 0, 0};
   set_exp(&test, exp1);
 
   print_dec(&test);
   // print_dec_bin(test);
-  
+
   printf("DECtoFLOAT=\n");
 
   float result = 0;
@@ -140,9 +142,8 @@ void from_dec_to_float_test(unsigned sign1, unsigned num1, unsigned exp1){
   printf("------------------\n");
 }
 
-
-void truncate_test(unsigned sign1, unsigned num1, unsigned exp1){
- s21_decimal test = {sign1, num1, 0, 0};
+void truncate_test(unsigned sign1, unsigned num1, unsigned exp1) {
+  s21_decimal test = {sign1, num1, 0, 0};
   set_exp(&test, exp1);
 
   print_dec(&test);
@@ -156,9 +157,8 @@ void truncate_test(unsigned sign1, unsigned num1, unsigned exp1){
   printf("------------------\n");
 }
 
-
-void round_test(unsigned sign1, unsigned num1, unsigned exp1){
- s21_decimal test = {sign1, num1, 0, 0};
+void round_test(unsigned sign1, unsigned num1, unsigned exp1) {
+  s21_decimal test = {sign1, num1, 0, 0};
   set_exp(&test, exp1);
 
   print_dec(&test);
@@ -172,8 +172,8 @@ void round_test(unsigned sign1, unsigned num1, unsigned exp1){
   printf("------------------\n");
 }
 
-void floor_test(unsigned sign1, unsigned num1, unsigned exp1){
- s21_decimal test = {sign1, num1, 0, 0};
+void floor_test(unsigned sign1, unsigned num1, unsigned exp1) {
+  s21_decimal test = {sign1, num1, 0, 0};
   set_exp(&test, exp1);
 
   print_dec(&test);
