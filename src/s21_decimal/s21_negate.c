@@ -1,12 +1,18 @@
 #include "../s21_decimal.h"
 
 int s21_negate(s21_decimal value, s21_decimal *result) {
-  s21_decimal inf = INF();
+    s21_other_result code = S21_OTHER_OK;
 
-  int error_code = 0;
-  if (s21_is_greater_module(value, inf)) error_code = 1;
+    if (!result) {
+        code = S21_OTHER_ERROR;
+    } else {
+        *result = value;
+        s21_decimal_set_sign(result, !s21_decimal_get_sign(*result));
 
-  set_sign(&value, !get_sign(value));
-  *result = value;
-  return error_code;
+        if (!s21_is_correct_decimal(value)) {
+            code = S21_OTHER_ERROR;
+        }
+    }
+
+    return code;
 }

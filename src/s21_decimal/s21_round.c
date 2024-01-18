@@ -1,28 +1,28 @@
 #include "../s21_decimal.h"
 
 int s21_round(s21_decimal value, s21_decimal *result) {
-  s21_decimal one = ONE();
-  s21_decimal five = FIVE();
-  s21_decimal inf = INF();
-  s21_decimal neg_inf = NEG_INF();
+    s21_other_result code = S21_OTHER_OK;
 
-  int error_code = 0;
-  if (s21_is_greater(value, inf)) error_code = 1;
-  if (s21_is_less(value, neg_inf)) error_code = 1;
-  *result = value;
-  set_exp(&five, 1);
+    if (!result) {
+        code = S21_OTHER_ERROR;
+    } else if (!s21_is_correct_decimal(value)) {
+        code = S21_OTHER_ERROR;
+        *result = s21_decimal_get_inf();
+    } else {
+        *result = s21_decimal_get_zero();
+        int sign = s21_decimal_get_sign(value);
+        s21_decimal fractional;
+        s21_decimal value_unsigned_truncated;
+        s21_decimal value_unsigned = s21_abs(value);
+        s21_truncate(value_unsigned, &value_unsigned_truncated);
 
-  unsigned new_sign = get_sign(value);
-  set_sign(&value, 1);
+        s21_sub(value_unsigned, value_unsigned_truncated, &fractional);
 
-  s21_truncate(value, result);
+        value_unsigned_truncated = s21_round_banking(value_unsigned_truncated, fractional);
 
-  s21_decimal rest;
-  s21_sub(value, *result, &rest);
+        *result = value_unsigned_truncated;
+        s21_decimal_set_sign(result, sign);
+    }
 
-  normalize_decs(&rest, &five);
-  if (s21_is_greater_or_equal(rest, five)) s21_add(*result, one, result);
-
-  set_sign(result, new_sign);
-  return error_code;
+    return code;
 }

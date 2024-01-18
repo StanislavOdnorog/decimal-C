@@ -1,32 +1,50 @@
 #include "../s21_decimal.h"
 
 int s21_from_float_to_decimal(float src, s21_decimal *dst) {
-  s21_decimal ten = TEN();
-  s21_decimal temp = ZERO();
-  *dst = temp;
+    s21_conversion_result code = S21_CONVERSION_OK;
+    if (!dst) {
+        code = S21_CONVERSION_ERROR;
+    } else if (src == 0.0) {
+        code = S21_CONVERSION_OK;
+        *dst = s21_decimal_get_zero();
+        if (signbit(src) != 0) {
+            s21_decimal_set_sign(dst, S21_NEGATIVE);
+        }
+    } else if (isinf(src) || isnan(src)) {
+        code = S21_CONVERSION_ERROR;
+        *dst = s21_decimal_get_inf();
+        if (signbit(src) != 0) {
+            s21_decimal_set_sign(dst, S21_NEGATIVE);
+        }
+    } else if (fabsf(src) > MAX_FLOAT_TO_CONVERT) {
+        code = S21_CONVERSION_ERROR;
+        *dst = s21_decimal_get_inf();
+        if (signbit(src) != 0) {
+            s21_decimal_set_sign(dst, S21_NEGATIVE);
+        }
+    } else if (fabsf(src) < MIN_FLOAT_TO_CONVERT) {
+        code = S21_CONVERSION_ERROR;
+        *dst = s21_decimal_get_zero();
+    } else {
+        *dst = s21_decimal_get_zero();
+        s21_decimal result;
+        char flt[64];
 
-  bool sign = src > 0;
-  dst->bits[3] = SIGN_HEX_POS;
-  set_sign(dst, 1);
-  if (!sign) src = -src;
+        sprintf(flt, "%.6E", fabsf(src));
+        int exp = s21_get_float_exp_from_string(flt);
+        if (exp <= -23) {
+            int float_precision = exp + 28;
+            sprintf(flt, "%.*E", float_precision, fabsf(src));
+        }
 
-  unsigned *ptr = (unsigned *)&src;
-  dst->bits[0] = trunc(src);
+        result = s21_float_string_to_decimal(flt);
 
-  unsigned exp = 0;
-  while ((float)src != (float)trunc(src) && exp < 6) {
-    src -= trunc(src);
-    src *= 10.0;
+        if (signbit(src) != 0) {
+            s21_decimal_set_sign(&result, S21_NEGATIVE);
+        }
 
-    s21_from_int_to_decimal((int)src, &temp);
+        *dst = result;
+    }
 
-    s21_mul(*dst, ten, dst);
-    s21_add(*dst, temp, dst);
-    exp++;
-  }
-
-  set_exp(dst, exp);
-  set_sign(dst, sign);
-
-  return 0;
+    return code;
 }

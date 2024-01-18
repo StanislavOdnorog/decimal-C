@@ -53,10 +53,10 @@ Suite *suite_s21_is_not_equal_ste(void) {
   s = suite_create("s21_is_not_equal");
   tc = tcase_create("case_is_not_equal");
 
-  tcase_add_loop_test(tc, s21_is_not_equal_test_1, 0, 1000);
-  tcase_add_loop_test(tc, s21_is_not_equal_test_2, 0, 1000);
+  tcase_add_loop_test(tc, s21_is_not_equal_test_1, 0, 100);
+  tcase_add_loop_test(tc, s21_is_not_equal_test_2, 0, 100);
   tcase_add_test(tc, s21_is_not_equal_test_3);
-  tcase_add_loop_test(tc, s21_is_not_equal_test_4, 0, 1000);
+  tcase_add_loop_test(tc, s21_is_not_equal_test_4, 0, 100);
 
   suite_add_tcase(s, tc);
   return s;

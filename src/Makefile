@@ -1,5 +1,5 @@
 FLAGS= -lm -lsubunit -lcheck -lpthread -lrt
-CC=gcc -Wno-error=missing-braces -Wextra -Werror -std=c11 
+CC=gcc -Wall -Wextra -Werror -std=c11 
 OS=MAC
 FUNC_FILES_C= s21_decimal/*.c
 FUNC_FILES_O= *.o
@@ -38,10 +38,6 @@ s21_decimal.a:
 	make build_library
 	rm -rf *.o
  
-simple_test: 
-	$(CC) ./s21_decimal/*.c ./s21_decimal_simple_tests/*.c -lm -o simple_test
-	./simple_test
-
 test: clean s21_decimal.a
 	$(CC) $(CHECKFLAGS) $(GLFLAGS) $(GCOVFLAGS) s21_decimal_tests/*.c s21_decimal/*.c main.c -L. s21_decimal.a  -o s21_test -lcheck $(ADD_LIB)
 	./s21_test

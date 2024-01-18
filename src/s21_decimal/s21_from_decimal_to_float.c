@@ -1,36 +1,42 @@
 #include "../s21_decimal.h"
 
 int s21_from_decimal_to_float(s21_decimal src, float *dst) {
-  s21_decimal compare_pos = {0xFFFFF, 0, 0, SIGN_HEX_POS};
-  s21_decimal ten = TEN();
-  s21_decimal one = ONE();
-  *dst = 0;
+    s21_conversion_result code = S21_CONVERSION_OK;
+    if (!dst) {
+        code = S21_CONVERSION_ERROR;
+    } else if (!s21_is_correct_decimal(src)) {
+        code = S21_CONVERSION_ERROR;
+        *dst = 0.0;
+    } else if (s21_is_equal(src, s21_decimal_get_zero())) {
+        int sign = s21_decimal_get_sign(src);
+        if (sign == S21_NEGATIVE) {
+            *dst = -0.0;
+        } else {
+            *dst = 0.0;
+        }
+        code = S21_CONVERSION_OK;
+    } else {
+        *dst = 0.0;
+        double tmp = 0.0;
+        int sign = s21_decimal_get_sign(src);
+        int power = s21_decimal_get_power(src);
 
-  int error_code = 0;
-  if (s21_is_greater_module(src, compare_pos)) error_code = 1;
+        for (int i = 0; i < MAX_BLOCK_NUMBER; i++) {
+            if (s21_decimal_is_set_bit(src, i) != 0) {
+                tmp += pow(2.0, i);
+            }
+        }
 
-  unsigned new_sign = get_sign(src);
-  set_sign(&src, 1);
+        double powerten = pow(10, power);
+        tmp /= powerten;
 
-  float temp = 0;
-  normalize_decs(&src, &one);
-  float mult = 1;
+        if (sign == S21_NEGATIVE) {
+            tmp *= -1.0;
+        }
 
-  for (unsigned i = 0; i <= get_exp(src); i++) {
-    mult /= 10.0;
-  }
+        *dst = (float)tmp;
+    }
 
-  char result[MAX_DECIMAL_EXP + 1] = {0};
-  form_list_from_dec(result, src);
-
-  for (int i = MAX_DECIMAL_EXP; i >= 0; i--) {
-    temp += result[i] * mult;
-    mult *= 10.;
-  }
-
-  *dst = temp;
-
-  if (!new_sign) *dst = -*dst;
-
-  return error_code;
+    return code;
 }
+

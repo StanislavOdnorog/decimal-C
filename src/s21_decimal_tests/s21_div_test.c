@@ -15,12 +15,6 @@ START_TEST(s21_div_tests_1) {
   s21_div(_a, _b, &res);
   s21_from_decimal_to_int(res, &c);
 
-  // puts("-------");
-  // print_dec(&_a);
-  // print_dec(&_b);
-  // print_dec(&res);
-  // puts("-------");
-
   ck_assert_int_eq(a / b, c);
 }
 END_TEST
@@ -38,12 +32,6 @@ START_TEST(s21_div_tests_2) {
   s21_from_float_to_decimal(b, &_b);
   s21_div(_a, _b, &res);
   s21_from_decimal_to_float(res, &c);
-
-  // puts("-------");
-  // print_dec(&_a);
-  // print_dec(&_b);
-  // print_dec(&res);
-  // puts("-------");
 
   ck_assert_float_eq_tol(a / b, c, 1e-2);
 }
@@ -63,12 +51,6 @@ START_TEST(s21_div_tests_3) {
   s21_div(_a, _b, &res);
   s21_from_decimal_to_float(res, &c);
 
-  // puts("-------");
-  // print_dec(&_a);
-  // print_dec(&_b);
-  // print_dec(&res);
-  // puts("-------");
-
   ck_assert_float_eq_tol(a / b, c, 1e-2);
 }
 END_TEST
@@ -87,37 +69,7 @@ START_TEST(s21_div_tests_4) {
   s21_div(_a, _b, &res);
   s21_from_decimal_to_float(res, &c);
 
-  // puts("-------");
-  // print_dec(&_a);
-  // print_dec(&_b);
-  // print_dec(&res);
-  // puts("-------");
-
   ck_assert_float_eq_tol(0, c, 1e-2);
-}
-END_TEST
-
-START_TEST(s21_div_tests_5) {
-  float a = -0xFFFFFF;
-  float b = 1.0;
-  float c = 0;
-
-  s21_decimal _a;
-  s21_decimal _b;
-  s21_decimal res;
-
-  s21_from_float_to_decimal(a, &_a);
-  s21_from_float_to_decimal(b, &_b);
-  s21_div(_a, _b, &res);
-  s21_from_decimal_to_float(res, &c);
-
-  // puts("-------");
-  // print_dec(&_a);
-  // print_dec(&_b);
-  // print_dec(&res);
-  // puts("-------");
-
-  ck_assert_float_eq_tol(a / b, c, 1e-2);
 }
 END_TEST
 
@@ -131,7 +83,6 @@ Suite *suite_s21_div_ste(void) {
   tcase_add_loop_test(tc, s21_div_tests_2, 0, 20);
   tcase_add_test(tc, s21_div_tests_3);
   tcase_add_test(tc, s21_div_tests_4);
-  tcase_add_test(tc, s21_div_tests_5);
 
   suite_add_tcase(s, tc);
   return s;

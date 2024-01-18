@@ -61,11 +61,9 @@ END_TEST
 START_TEST(s21_add_tests_4) {
   float a = -0.00000002;
   float b = -4;
-  float c = 0;
 
   s21_decimal _a;
   s21_decimal _b;
-  s21_decimal res;
 
   s21_from_float_to_decimal(a, &_a);
   s21_from_float_to_decimal(b, &_b);
@@ -76,11 +74,9 @@ END_TEST
 START_TEST(s21_add_tests_5) {
   float a = -4;
   float b = -0.00000002;
-  float c = 0;
 
   s21_decimal _a;
   s21_decimal _b;
-  s21_decimal res;
 
   s21_from_float_to_decimal(a, &_a);
   s21_from_float_to_decimal(b, &_b);
