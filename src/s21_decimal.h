@@ -2,13 +2,13 @@
 #define S21_DECIMAL_H
 
 // LIBRARIES //
+#include <limits.h>
 #include <math.h>
 #include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdint.h>
-#include <limits.h>
 
 // BITS 0 TO 15 ARE ZEROES (96-111)
 // BITS 16 TO 23 ARE EXP (112-119)
@@ -21,7 +21,7 @@
 #define MAX_BLOCK_NUMBER 96
 #define MAX_FLOAT_TO_CONVERT 79228157791897854723898736640.0f
 #define MIN_FLOAT_TO_CONVERT \
-    0.00000000000000000000000000010000000031710768509710513471352647538147514756461109f
+  0.00000000000000000000000000010000000031710768509710513471352647538147514756461109f
 
 // STRUCTURES//
 typedef struct {
@@ -30,7 +30,7 @@ typedef struct {
 
 typedef struct {
   s21_decimal decimals[2];
-} s21_int256;
+} s21_big_decimal;
 
 typedef union s21_decimal_data {
   int data;
@@ -43,41 +43,41 @@ typedef union s21_decimal_data {
 } s21_decimal_data;
 
 typedef enum s21_arithmetic_result {
-    S21_ARITHMETIC_OK = 0,
-    S21_ARITHMETIC_BIG = 1,
-    S21_ARITHMETIC_SMALL = 2,
-    S21_ARITHMETIC_ZERO_DIV = 3,
-    S21_ARITHMETIC_ERROR = 4
+  S21_ARITHMETIC_OK = 0,
+  S21_ARITHMETIC_BIG = 1,
+  S21_ARITHMETIC_SMALL = 2,
+  S21_ARITHMETIC_ZERO_DIV = 3,
+  S21_ARITHMETIC_ERROR = 4
 } s21_arithmetic_result;
 
 typedef enum s21_comparison_result {
-    S21_COMPARISON_FALSE = 0,
-    S21_COMPARISON_TRUE = 1,
+  S21_COMPARISON_FALSE = 0,
+  S21_COMPARISON_TRUE = 1,
 } s21_comparison_result;
 
 typedef union decimal_bit3 {
-    int i;
-    struct {
-        uint32_t empty2 : 16;
-        uint32_t power : 8;
-        uint32_t empty1 : 7;
-        uint32_t sign : 1;
-    } parts;
+  int i;
+  struct {
+    uint32_t empty2 : 16;
+    uint32_t power : 8;
+    uint32_t empty1 : 7;
+    uint32_t sign : 1;
+  } parts;
 } decimal_bit3;
 
 typedef enum s21_decimal_sign {
-    S21_POSITIVE = 0,
-    S21_NEGATIVE = 1
+  S21_POSITIVE = 0,
+  S21_NEGATIVE = 1
 } s21_decimal_sign;
 
 typedef enum s21_other_result {
-    S21_OTHER_OK = 0,
-    S21_OTHER_ERROR = 1
+  S21_OTHER_OK = 0,
+  S21_OTHER_ERROR = 1
 } s21_other_result;
 
 typedef enum s21_conversion_result {
-    S21_CONVERSION_OK = 0,
-    S21_CONVERSION_ERROR = 1
+  S21_CONVERSION_OK = 0,
+  S21_CONVERSION_ERROR = 1
 } s21_conversion_result;
 
 // TESTS //
@@ -97,7 +97,6 @@ void truncate_test(unsigned sign1, unsigned num1, unsigned exp1);
 void round_test(unsigned sign1, unsigned num1, unsigned exp1);
 void floor_test(unsigned sign1, unsigned num1, unsigned exp1);
 
-
 // BINARY //
 
 int s21_is_set_bit(int number, int index);
@@ -108,30 +107,39 @@ int s21_decimal_is_set_bit(s21_decimal decimal, int index);
 s21_decimal s21_decimal_set_bit(s21_decimal decimal, int index);
 int s21_decimal_get_not_zero_bit(s21_decimal decimal);
 
-int s21_int128_binary_equal_zero(s21_decimal decimal);
-int s21_int128_binary_compare(s21_decimal d1, s21_decimal d2);
-int s21_int256_binary_compare(s21_int256 d1, s21_int256 d2);
+int s21_binary_equal_zero(s21_decimal decimal);
+int s21_binary_compare(s21_decimal d1, s21_decimal d2);
+int s21_big_decimal_binary_compare(s21_big_decimal d1, s21_big_decimal d2);
 
-s21_decimal s21_int128_binary_and(s21_decimal decimal1, s21_decimal decimal2);
-s21_decimal s21_int128_binary_xor(s21_decimal decimal1, s21_decimal decimal2);
-s21_decimal s21_int128_binary_not(s21_decimal decimal);
+s21_decimal s21_binary_and(s21_decimal decimal1, s21_decimal decimal2);
+s21_decimal s21_binary_xor(s21_decimal decimal1, s21_decimal decimal2);
+s21_decimal s21_binary_not(s21_decimal decimal);
 
-s21_decimal s21_int128_binary_addition(s21_decimal decimal1, s21_decimal decimal2);
-s21_decimal s21_int128_binary_subtraction(s21_decimal decimal1, s21_decimal decimal2);
-s21_decimal s21_int128_binary_division(s21_decimal decimal1, s21_decimal decimal2, s21_decimal *remainder);
-s21_int256 s21_int128_binary_multiplication(s21_decimal decimal1, s21_decimal decimal2);
+s21_decimal s21_binary_addition(s21_decimal decimal1, s21_decimal decimal2);
+s21_decimal s21_binary_subtraction(s21_decimal decimal1, s21_decimal decimal2);
+s21_decimal s21_binary_division(s21_decimal decimal1, s21_decimal decimal2,
+                                s21_decimal *remainder);
+s21_big_decimal s21_binary_multiplication(s21_decimal decimal1,
+                                          s21_decimal decimal2);
 
-s21_int256 s21_int256_binary_addition(s21_int256 decimal1, s21_int256 decimal2);
-s21_int256 s21_int256_binary_subtraction(s21_int256 decimal1, s21_int256 decimal2);
-s21_int256 s21_int256_binary_division(s21_int256 decimal1, s21_int256 decimal2, s21_int256 *remainder);
-s21_int256 s21_int256_binary_multiplication(s21_int256 decimal1, s21_decimal decimal2);
+s21_big_decimal s21_big_decimal_binary_addition(s21_big_decimal decimal1,
+                                                s21_big_decimal decimal2);
+s21_big_decimal s21_big_decimal_binary_subtraction(s21_big_decimal decimal1,
+                                                   s21_big_decimal decimal2);
+s21_big_decimal s21_big_decimal_binary_division(s21_big_decimal decimal1,
+                                                s21_big_decimal decimal2,
+                                                s21_big_decimal *remainder);
+s21_big_decimal s21_big_decimal_binary_multiplication(s21_big_decimal decimal1,
+                                                      s21_decimal decimal2);
 
-s21_decimal s21_int128_binary_shift_left(s21_decimal decimal, int shift);
-s21_decimal s21_int128_binary_shift_right(s21_decimal decimal, int shift);
-s21_decimal s21_int128_binary_shift_left_one(s21_decimal decimal);
-s21_decimal s21_int128_binary_shift_right_one(s21_decimal decimal);
-s21_int256 s21_int256_binary_shift_left(s21_int256 decimal, int shift);
-s21_int256 s21_int256_binary_shift_right(s21_int256 decimal, int shift);
+s21_decimal s21_binary_shift_left(s21_decimal decimal, int shift);
+s21_decimal s21_binary_shift_right(s21_decimal decimal, int shift);
+s21_decimal s21_binary_shift_left_one(s21_decimal decimal);
+s21_decimal s21_binary_shift_right_one(s21_decimal decimal);
+s21_big_decimal s21_big_decimal_binary_shift_left(s21_big_decimal decimal,
+                                                  int shift);
+s21_big_decimal s21_big_decimal_binary_shift_right(s21_big_decimal decimal,
+                                                   int shift);
 
 // ARITHMETICS //
 
@@ -141,17 +149,22 @@ int s21_mul(s21_decimal value_1, s21_decimal value_2, s21_decimal *result);
 int s21_div(s21_decimal value_1, s21_decimal value_2, s21_decimal *result);
 int s21_mod(s21_decimal value_1, s21_decimal value_2, s21_decimal *result);
 
-int s21_add_handle(s21_decimal value_1, s21_decimal value_2, s21_decimal *result);
-int s21_sub_handle(s21_decimal value_1, s21_decimal value_2, s21_decimal *result);
-int s21_mul_handle(s21_decimal value_1, s21_decimal value_2, s21_decimal *result);
-int s21_div_handle(s21_int256 value_2l, s21_int256 res, s21_int256 remainder, s21_decimal *result);
-int s21_div_calc_fractional(s21_int256 *res, s21_int256 value_2l, s21_int256 *remainder);
+int s21_add_handle(s21_decimal value_1, s21_decimal value_2,
+                   s21_decimal *result);
+int s21_sub_handle(s21_decimal value_1, s21_decimal value_2,
+                   s21_decimal *result);
+int s21_mul_handle(s21_decimal value_1, s21_decimal value_2,
+                   s21_decimal *result);
+int s21_div_handle(s21_big_decimal value_2l, s21_big_decimal res,
+                   s21_big_decimal remainder, s21_decimal *result);
+int s21_div_calc_fractional(s21_big_decimal *res, s21_big_decimal value_2l,
+                            s21_big_decimal *remainder);
 
-void s21_decimal_leveling(s21_decimal value_1, s21_decimal value_2, s21_int256 *value_1l,
-                          s21_int256 *value_2l);
+void s21_decimal_leveling(s21_decimal value_1, s21_decimal value_2,
+                          s21_big_decimal *value_1l, s21_big_decimal *value_2l);
 s21_decimal s21_abs(s21_decimal value_1);
 
-int s21_int256_get_shift_to_decimal(s21_int256 value);
+int s21_big_decimal_get_shift_to_decimal(s21_big_decimal value);
 int s21_max(int value_1, int value_2);
 
 // COMPARATORS //
@@ -177,9 +190,12 @@ void s21_decimal_set_sign(s21_decimal *decimal, int sign);
 void s21_decimal_set_power(s21_decimal *decimal, int power);
 int s21_decimal_even(s21_decimal value);
 
-s21_decimal s21_create_decimal_from_array(int data1, int data2, int data3, int data4);
-s21_decimal s21_create_decimal_from_data(int sign, int power, int data1, int data2, int data3);
-s21_decimal s21_create_decimal_from_strings(char *str1, char *str2, char *str3, char *str4);
+s21_decimal s21_create_decimal_from_array(int data1, int data2, int data3,
+                                          int data4);
+s21_decimal s21_create_decimal_from_data(int sign, int power, int data1,
+                                         int data2, int data3);
+s21_decimal s21_create_decimal_from_strings(char *str1, char *str2, char *str3,
+                                            char *str4);
 int s21_decimal_set_bits_from_string(int *bits, char *str);
 
 void s21_clear_decimal(s21_decimal *decimal);
@@ -187,7 +203,7 @@ void s21_decimal_null_service_bits(s21_decimal *value);
 s21_decimal s21_decimal_get_zero(void);
 s21_decimal s21_decimal_get_one(void);
 s21_decimal s21_decimal_get_ten(void);
-s21_decimal s21_int128_get_ten_pow(int pow);
+s21_decimal s21_get_ten_pow(int pow);
 s21_decimal s21_decimal_get_zerofive(void);
 s21_decimal s21_decimal_get_min(void);
 s21_decimal s21_decimal_get_max(void);
@@ -195,7 +211,7 @@ s21_decimal s21_decimal_get_int_max(void);
 s21_decimal s21_decimal_get_int_min(void);
 s21_decimal s21_decimal_get_inf(void);
 
-s21_int256 s21_create_int256_from_decimal(s21_decimal value_1);
+s21_big_decimal s21_create_big_decimal_from_decimal(s21_decimal value_1);
 
 static const s21_decimal all_ten_pows[39] = {
     [0] = {{0x1, 0x0, 0x0, 0x0}},
@@ -236,8 +252,7 @@ static const s21_decimal all_ten_pows[39] = {
     [35] = {{0x0, 0x2B878FE8, 0x72C74D82, 0x134261}},
     [36] = {{0x0, 0xB34B9F10, 0x7BC90715, 0xC097CE}},
     [37] = {{0x0, 0xF436A0, 0xD5DA46D9, 0x785EE10}},
-    [38] = {{0x0, 0x98A2240, 0x5A86C47A, 0x4B3B4CA8}}
-};
+    [38] = {{0x0, 0x98A2240, 0x5A86C47A, 0x4B3B4CA8}}};
 
 // ROUNDERS //
 

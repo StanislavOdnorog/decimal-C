@@ -52,8 +52,6 @@ START_TEST(s21_dec_test_3) {
 }
 END_TEST
 
-
-
 Suite *suite_s21_decimal_test(void) {
   Suite *s;
   TCase *tc;

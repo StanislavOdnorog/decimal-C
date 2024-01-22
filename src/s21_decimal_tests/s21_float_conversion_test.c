@@ -29,6 +29,50 @@ START_TEST(s21_from_decimal_to_float_3) {
 }
 END_TEST
 
+START_TEST(s21_from_decimal_to_float_4) {
+  float n = 1.2;
+  s21_decimal *var = NULL;
+  int result;
+
+  result = s21_from_float_to_decimal(n, var);
+
+  ck_assert_int_eq(result, S21_CONVERSION_ERROR);
+}
+END_TEST
+
+START_TEST(s21_from_decimal_to_float_5) {
+  float n = MIN_FLOAT_TO_CONVERT;
+  s21_decimal var;
+  int result;
+
+  result = s21_from_float_to_decimal(n, &var);
+
+  ck_assert_int_eq(result, 0);
+}
+END_TEST
+
+START_TEST(s21_from_decimal_to_float_6) {
+  float n = MAX_FLOAT_TO_CONVERT;
+  s21_decimal var;
+  int result;
+
+  result = s21_from_float_to_decimal(n, &var);
+
+  ck_assert_int_eq(result, 0);
+}
+END_TEST
+
+START_TEST(s21_from_decimal_to_float_7) {
+  float n = INFINITY;
+  s21_decimal var;
+  int result;
+
+  result = s21_from_float_to_decimal(n, &var);
+
+  ck_assert_int_eq(result, S21_CONVERSION_ERROR);
+}
+END_TEST
+
 Suite *suite_s21_from_decimal_to_float_ste(void) {
   Suite *s;
   TCase *tc;
@@ -38,6 +82,10 @@ Suite *suite_s21_from_decimal_to_float_ste(void) {
   tcase_add_test(tc, s21_from_decimal_to_float_1);
   tcase_add_loop_test(tc, s21_from_decimal_to_float_2, 0, 100);
   tcase_add_loop_test(tc, s21_from_decimal_to_float_3, 0, 100);
+  tcase_add_test(tc, s21_from_decimal_to_float_4);
+  tcase_add_test(tc, s21_from_decimal_to_float_5);
+  tcase_add_test(tc, s21_from_decimal_to_float_6);
+  tcase_add_test(tc, s21_from_decimal_to_float_7);
 
   suite_add_tcase(s, tc);
   return s;
